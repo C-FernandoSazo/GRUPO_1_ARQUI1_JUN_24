@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import RPi.GPIO as GPIO
 from time import sleep
 import random
+import threading
 from flask_cors import CORS
 
 from LCD import LCD
@@ -11,25 +12,66 @@ app = Flask(__name__)
 CORS(app)
 
 lcd = LCD(2,0x27) 
-# params available for rPi revision, I2C Address, and backlight on/off
-# lcd = LCD(2, 0x3F, True)
-#lcd_2 = LCD(2,0x22) 
 
 GPIO.setmode(GPIO.BOARD)
+
+#Sensor Fotorresistencia
+sensor_exterior = 16
+#Leds
+led_exterior = 38 
+led_recepcion = 36
+led_conferencia = 40
+led_banda = 35
+led_admin = 37
+led_cafeteria = 24
+led_bano = 26
+led_garage = 22
+
+GPIO.setup(sensor_exterior, GPIO.IN)
 
 # Estado inicial
 state = {
     "lights": {
-        "lobby": False,
-        "warehouse": False,
-        "exterior": False,
-        "offices": False
+        "led_recepcion": False,
+        "led_conferencia": False,
+        "led_banda": False,
+        "led_admin": False,
+        "led_cafeteria": False,
+        "led_exterior": False,
+        "led_bano": False,
+        "led_garage": False
     },
     "peopleCount": 0,
     "isConveyorMoving": False,
     "isGateOpen": False,
     "isAlarmActive": False
 }
+
+#Hilos
+
+#Sensor de fotoresistencia exterior
+
+def sensorExterior():
+    try:
+        while True:
+            # Lee el estado del sensor de luz
+            if GPIO.input(sensor_exterior):
+                print("Es de dia, LED apagado")
+                GPIO.output(led_exterior, GPIO.LOW)
+            else:
+                print("Es de noche, LED encendido")
+                GPIO.output(led_exterior, GPIO.HIGH)
+            sleep(1) 
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+        print("Programa interrumpido y GPIO limpio")
+
+def pruebahilo():
+    while True:
+        print("Ejecutandose hilo, ")
+
+
+#Manejo de solicitudes
 
 @app.route('/')
 def home():
@@ -40,7 +82,7 @@ def toggle_light(area):
     if area in state["lights"]:
         state["lights"][area] = not state["lights"][area]
         try:
-            lcd.message("Zancudo", 1)
+            lcd.message("Se encendio la luz de "+area, 1)
             
         except KeyboardInterrupt:
             GPIO.cleanup()
@@ -81,5 +123,9 @@ def toggle_alarm():
     state["isAlarmActive"] = not state["isAlarmActive"]
     return jsonify({"success": True, "isAlarmActive": state["isAlarmActive"]}), 200
 
+
 if __name__ == '__main__':
     app.run(debug=True)
+    hilo_sensor = threading.Thread(target=pruebahilo)
+    hilo_sensor.daemon = True  # El hilo daemon se cierra automáticamente cuando se cierra el programa principal
+    hilo_sensor.start()

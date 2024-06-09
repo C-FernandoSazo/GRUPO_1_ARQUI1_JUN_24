@@ -164,7 +164,7 @@ function App() {
                   id="lobby-toggle"
                   type="checkbox"
                   checked={lights.lobby}
-                  onChange={() => toggleLight('lobby')}
+                  onChange={() => toggleLight('led_recepcion')}
                 />
                 <label className="toggle-label" htmlFor="lobby-toggle"></label>
               </div>
@@ -178,7 +178,7 @@ function App() {
                   id="warehouse-toggle"
                   type="checkbox"
                   checked={lights.warehouse}
-                  onChange={() => toggleLight('warehouse')}
+                  onChange={() => toggleLight('led_conferencia')}
                 />
                 <label className="toggle-label" htmlFor="warehouse-toggle"></label>
               </div>
