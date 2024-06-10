@@ -78,8 +78,8 @@ def toggle_light(area):
     if area in state["lights"]:
         state["lights"][area] = not state["lights"][area]
         try:
-            lcd.message("Se encendio la luz de "+area, 1)
-            
+            lcd.message("Luz ", 1)
+            lcd.message(area, 2)
         except KeyboardInterrupt:
             GPIO.cleanup()
         return jsonify({"success": True, "lights": state["lights"]}), 200
@@ -98,7 +98,20 @@ def increment_people_count():
 @app.route('/api/conveyor', methods=['POST'])
 def toggle_conveyor():
     state["isConveyorMoving"] = not state["isConveyorMoving"]
-    return jsonify({"success": True, "isConveyorMoving": state["isConveyorMoving"]}), 200
+    
+
+    if request.method == 'POST':
+        state["isGateOpen"] = not state["isGateOpen"]
+        print("SE ACCIONA")
+        try:
+            lcd.message("CONVEYOR", 1)
+            lcd.message("  MOVING", 2)
+        except KeyboardInterrupt:
+            GPIO.cleanup()
+        return jsonify({"success": True, "isConveyorMoving": state["isConveyorMoving"]}), 200
+    elif request.method == 'GET':
+        print("SE MUEVE")
+        return jsonify({"isConveyorMoving": state["isConveyorMoving"]}), 200
 
 @app.route('/api/gate', methods=['GET', 'POST'])
 def handle_gate():
@@ -106,7 +119,8 @@ def handle_gate():
         state["isGateOpen"] = not state["isGateOpen"]
         print("SE ACCIONA")
         try:
-            lcd.message("Caracoles", 1)
+            lcd.message("OPENING", 1)
+            lcd.message("   DOOR", 2)
         except KeyboardInterrupt:
             GPIO.cleanup()
         return jsonify({"success": True, "isGateOpen": state["isGateOpen"]}), 200
