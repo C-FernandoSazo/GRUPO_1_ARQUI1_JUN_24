@@ -17,28 +17,28 @@ GPIO.setmode(GPIO.BOARD)
 #Sensor Fotorresistencia
 sensor_exterior = 16
 #Leds
-led_exterior = 38 
-led_recepcion = 36
-led_conferencia = 40
-led_banda = 35
-led_admin = 37
-led_cafeteria = 24
-led_bano = 26
-led_garage = 22
+Exterior = 38 
+Area_Recepcion = 36
+Area_Conferencia = 40
+Area_Trabajo = 35
+Area_Administracion = 37
+Cafeteria = 24
+Bano = 26
+Area_Transporte = 22
 
 GPIO.setup(sensor_exterior, GPIO.IN)
 
 # Estado inicial
 state = {
     "lights": {
-        "led_recepcion": False,
-        "led_conferencia": False,
-        "led_banda": False,
-        "led_admin": False,
-        "led_cafeteria": False,
-        "led_exterior": False,
-        "led_bano": False,
-        "led_garage": False
+        "Area_Recepcion": False,
+        "Area_Conferencia": False,
+        "Area_Trabajo": False,
+        "Area_Administracion": False,
+        "Cafeteria": False,
+        "Area_Transporte": False,
+        "Bano": False,
+        "Exterior": False
     },
     "peopleCount": 0,
     "isConveyorMoving": False,
@@ -56,10 +56,12 @@ def sensorExterior():
             # Lee el estado del sensor de luz
             if GPIO.input(sensor_exterior):
                 print("Es de dia, LED apagado")
-                GPIO.output(led_exterior, GPIO.LOW)
+                GPIO.output(Exterior, GPIO.LOW)
+                state["lights"][Exterior] = False
             else:
                 print("Es de noche, LED encendido")
-                GPIO.output(led_exterior, GPIO.HIGH)
+                GPIO.output(Exterior, GPIO.HIGH)
+                state["lights"][Exterior] = True
             sleep(1) 
     except KeyboardInterrupt:
         GPIO.cleanup()
@@ -73,13 +75,25 @@ def sensorExterior():
 def home():
     return "Bienvenido a la API de control del establecimiento!"
 
+
+#Luces
 @app.route('/api/lights/<area>', methods=['POST'])
 def toggle_light(area):
     if area in state["lights"]:
-        state["lights"][area] = not state["lights"][area]
+        
         try:
-            lcd.message("Luz ", 1)
-            lcd.message(area, 2)
+            if not state["lights"][area]:
+                #Luz encendida
+                lcd.message(area, 1)
+                lcd.message(f"Luz ON", 2)
+                #GPIO.output(area, GPIO.HIGH)
+                state["lights"][area] = True
+            else: 
+                #Luz apagada
+                lcd.message(area, 1)
+                lcd.message(f"Luz OFF", 2)
+                #GPIO.output(area, GPIO.LOW)
+                state["lights"][area] = False
         except KeyboardInterrupt:
             GPIO.cleanup()
         return jsonify({"success": True, "lights": state["lights"]}), 200
@@ -119,8 +133,8 @@ def handle_gate():
         state["isGateOpen"] = not state["isGateOpen"]
         print("SE ACCIONA")
         try:
-            lcd.message("OPENING", 1)
-            lcd.message("   DOOR", 2)
+            lcd.message("ABRIENDO", 1)
+            lcd.message("PORTON", 2)
         except KeyboardInterrupt:
             GPIO.cleanup()
         return jsonify({"success": True, "isGateOpen": state["isGateOpen"]}), 200
@@ -136,3 +150,6 @@ def toggle_alarm():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    lcd.message("<G1_ARQUI1>", 1)
+    lcd.message("<VACAS_JUN_24>", 2)
+    sleep(5)
