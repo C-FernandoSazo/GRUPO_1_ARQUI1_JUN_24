@@ -80,16 +80,18 @@ def home():
 @app.route('/api/lights/<area>', methods=['POST'])
 def toggle_light(area):
     if area in state["lights"]:
-        state["lights"][area] = not state["lights"][area]
+        
         try:
             if not state["lights"][area]:
                 #Luz encendida
-                lcd.message(f"Luz {area}: ON", 1)
+                lcd.message(area, 1)
+                lcd.message(f"Luz ON", 2)
                 #GPIO.output(area, GPIO.HIGH)
                 state["lights"][area] = True
             else: 
                 #Luz apagada
-                lcd.message(f"Luz {area}: OFF", 1)
+                lcd.message(area, 1)
+                lcd.message(f"Luz OFF", 2)
                 #GPIO.output(area, GPIO.LOW)
                 state["lights"][area] = False
         except KeyboardInterrupt:
