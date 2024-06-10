@@ -280,7 +280,7 @@ function App() {
                   id="lobby-toggle"
                   type="checkbox"
                   checked={lights.lobby}
-                  onChange={() => toggleLight('led_recepcion')}
+                  onChange={() => toggleLight('Area_Recepcion')}
                 />
                 <label className="toggle-label" htmlFor="lobby-toggle"></label>
               </div>
@@ -294,7 +294,7 @@ function App() {
                   id="warehouse-toggle"
                   type="checkbox"
                   checked={lights.warehouse}
-                  onChange={() => toggleLight('led_conferencia')}
+                  onChange={() => toggleLight('Area_Conferencia')}
                 />
                 <label className="toggle-label" htmlFor="warehouse-toggle"></label>
               </div>
@@ -308,7 +308,7 @@ function App() {
                   id="offices-toggle"
                   type="checkbox"
                   checked={lights.offices}
-                  onChange={() => toggleLight('led_banda')}
+                  onChange={() => toggleLight('Area_Trabajo')}
                 />
                 <label className="toggle-label" htmlFor="offices-toggle"></label>
               </div>
@@ -322,7 +322,7 @@ function App() {
                   id="admin-toggle"
                   type="checkbox"
                   checked={lights.admin}
-                  onChange={() => toggleLight('led_admin')}
+                  onChange={() => toggleLight('Area_Administracion')}
                 />
                 <label className="toggle-label" htmlFor="admin-toggle"></label>
               </div>
@@ -342,7 +342,7 @@ function App() {
                   id="transporte-toggle"
                   type="checkbox"
                   checked={lights.transporte}
-                  onChange={() => toggleLight('led_garage')}
+                  onChange={() => toggleLight('Area_Transporte')}
                 />
                 <label className="toggle-label" htmlFor="transporte-toggle"></label>
               </div>
@@ -356,7 +356,7 @@ function App() {
                   id="cafeteria-toggle"
                   type="checkbox"
                   checked={lights.cafeteria}
-                  onChange={() => toggleLight('led_cafeteria')}
+                  onChange={() => toggleLight('Cafeteria')}
                 />
                 <label className="toggle-label" htmlFor="cafeteria-toggle"></label>
               </div>
@@ -370,7 +370,7 @@ function App() {
                   id="bano-toggle"
                   type="checkbox"
                   checked={lights.bano}
-                  onChange={() => toggleLight('led_bano')}
+                  onChange={() => toggleLight('Bano')}
                 />
                 <label className="toggle-label" htmlFor="bano-toggle"></label>
               </div>
@@ -384,7 +384,7 @@ function App() {
                   id="exterior-toggle"
                   type="checkbox"
                   checked={lights.exterior}
-                  onChange={() => toggleLight('led_exterior')}
+                  onChange={() => toggleLight('Exterior')}
                 />
                 <label className="toggle-label" htmlFor="exterior-toggle"></label>
               </div>
