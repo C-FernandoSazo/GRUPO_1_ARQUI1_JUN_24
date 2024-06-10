@@ -66,9 +66,6 @@ def sensorExterior():
         GPIO.cleanup()
         print("Programa interrumpido y GPIO limpio")
 
-def pruebahilo():
-    while True:
-        print("Ejecutandose hilo, ")
 
 
 #Manejo de solicitudes
@@ -126,6 +123,3 @@ def toggle_alarm():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    hilo_sensor = threading.Thread(target=pruebahilo)
-    hilo_sensor.daemon = True  # El hilo daemon se cierra automáticamente cuando se cierra el programa principal
-    hilo_sensor.start()

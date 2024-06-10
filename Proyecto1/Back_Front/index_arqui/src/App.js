@@ -97,7 +97,7 @@ function App() {
   }, []);
 
   const toggleLight = (area) => {
-    fetch(`http://localhost:5000/api/lights/${area}`, { method: 'POST' })
+    fetch(`api/lights/${area}`, { method: 'POST' })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -157,7 +157,7 @@ function App() {
           <div className="light-controls">
             <div>
               <IconLightbulb />
-              <label>Lobby</label>
+              <label>Recepción</label>
               <div className="toggle-switch">
                 <input
                   className="toggle-input"
@@ -171,7 +171,7 @@ function App() {
             </div>
             <div>
               <IconLightbulb />
-              <label>Warehouse</label>
+              <label>Área Conferencias</label>
               <div className="toggle-switch">
                 <input
                   className="toggle-input"
@@ -185,14 +185,76 @@ function App() {
             </div>
             <div>
               <IconLightbulb />
-              <label>Offices</label>
+              <label>Área de Trabajo</label>
               <div className="toggle-switch">
                 <input
                   className="toggle-input"
                   id="offices-toggle"
                   type="checkbox"
                   checked={lights.offices}
-                  onChange={() => toggleLight('offices')}
+                  onChange={() => toggleLight('led_admin')}
+                />
+                <label className="toggle-label" htmlFor="offices-toggle"></label>
+              </div>
+            </div>
+            <div>
+              <IconLightbulb />
+              <label>Administración</label>
+              <div className="toggle-switch">
+                <input
+                  className="toggle-input"
+                  id="exterior-toggle"
+                  type="checkbox"
+                  checked={lights.exterior}
+                  onChange={() => toggleLight('led_exterior')}
+                />
+                <label className="toggle-label" htmlFor="exterior-toggle"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="control-container">
+          <h2 className="control-title">Control de Luces</h2>
+          <div className="light-controls">
+            <div>
+              <IconLightbulb />
+              <label>Área de Transporte</label>
+              <div className="toggle-switch">
+                <input
+                  className="toggle-input"
+                  id="lobby-toggle"
+                  type="checkbox"
+                  checked={lights.lobby}
+                  onChange={() => toggleLight('led_recepcion')}
+                />
+                <label className="toggle-label" htmlFor="lobby-toggle"></label>
+              </div>
+            </div>
+            <div>
+              <IconLightbulb />
+              <label>Cafetería</label>
+              <div className="toggle-switch">
+                <input
+                  className="toggle-input"
+                  id="warehouse-toggle"
+                  type="checkbox"
+                  checked={lights.warehouse}
+                  onChange={() => toggleLight('led_conferencia')}
+                />
+                <label className="toggle-label" htmlFor="warehouse-toggle"></label>
+              </div>
+            </div>
+            <div>
+              <IconLightbulb />
+              <label>Baño</label>
+              <div className="toggle-switch">
+                <input
+                  className="toggle-input"
+                  id="offices-toggle"
+                  type="checkbox"
+                  checked={lights.offices}
+                  onChange={() => toggleLight('led_admin')}
                 />
                 <label className="toggle-label" htmlFor="offices-toggle"></label>
               </div>
@@ -206,7 +268,7 @@ function App() {
                   id="exterior-toggle"
                   type="checkbox"
                   checked={lights.exterior}
-                  onChange={() => toggleLight('exterior')}
+                  onChange={() => toggleLight('led_exterior')}
                 />
                 <label className="toggle-label" htmlFor="exterior-toggle"></label>
               </div>
