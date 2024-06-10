@@ -16,6 +16,7 @@ GPIO.setmode(GPIO.BOARD)
 
 #Sensor Fotorresistencia
 sensor_exterior = 16
+
 #Leds
 Exterior = 38 
 Area_Recepcion = 36
@@ -26,7 +27,13 @@ Cafeteria = 24
 Bano = 26
 Area_Transporte = 22
 
-GPIO.setup(sensor_exterior, GPIO.IN)
+#Sensores
+sensor1 = 11 
+sensor2 = 12 
+
+# Variable para almacenar el estado de los sensores
+estado_sensor1 = False
+estado_sensor2 = False
 
 # Estado inicial
 state = {
@@ -49,7 +56,6 @@ state = {
 #Hilos
 
 #Sensor de fotoresistencia exterior
-
 def sensorExterior():
     try:
         while True:
@@ -67,6 +73,42 @@ def sensorExterior():
         GPIO.cleanup()
         print("Programa interrumpido y GPIO limpio")
 
+#Sensor digital
+def monitorizar_entrada_salida():
+    global estado_sensor1, estado_sensor2
+    try:
+        while True:
+            estado_actual_sensor1 = False
+            estado_actual_sensor2 = False
+            estado_actual_sensor1 = GPIO.input(sensor1)
+            estado_actual_sensor2 = GPIO.input(sensor2)
+            print("estados " + str(estado_actual_sensor1) +" "+ str(estado_actual_sensor2))
+            # Detecta la secuencia de entrada
+            if estado_actual_sensor1 and not estado_sensor1:
+                # Sensor 1 activado
+                sleep(0.1)  # Pequeño delay para evitar rebotes
+                if GPIO.input(sensor2):
+                    print("Una persona ha entrado.")
+                    estado_sensor1 = False  # Restablece el estado para la próxima detección
+
+            # Detecta la secuencia de salida
+            elif estado_actual_sensor2 and not estado_sensor2:
+                # Sensor 2 activado
+                sleep(0.1)  # Pequeño delay para evitar rebotes
+                if GPIO.input(sensor1):
+                    print("Una persona ha salido.")
+                    estado_sensor2 = False  # Restablece el estado para la próxima detección
+
+            # Actualiza los estados anteriores
+            estado_sensor1 = estado_actual_sensor1
+            estado_sensor2 = estado_actual_sensor2
+
+            sleep(0.2)  # Pausa para evitar sobrecarga del CPU
+
+    except KeyboardInterrupt:
+        print("Interrupcin por teclado")
+        GPIO.cleanup()  # Limpieza de los pines GPIO
+
 
 
 #Manejo de solicitudes
@@ -80,7 +122,6 @@ def home():
 @app.route('/api/lights/<area>', methods=['POST'])
 def toggle_light(area):
     if area in state["lights"]:
-        
         try:
             if not state["lights"][area]:
                 #Luz encendida
@@ -147,9 +188,15 @@ def toggle_alarm():
     state["isAlarmActive"] = not state["isAlarmActive"]
     return jsonify({"success": True, "isAlarmActive": state["isAlarmActive"]}), 200
 
+def setup():
+    GPIO.setup(sensor_exterior, GPIO.IN)
+    GPIO.setup(sensor1, GPIO.IN)
+    GPIO.setup(sensor2, GPIO.IN)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+    setup()
     lcd.message("<G1_ARQUI1>", 1)
     lcd.message("<VACAS_JUN_24>", 2)
     sleep(5)
