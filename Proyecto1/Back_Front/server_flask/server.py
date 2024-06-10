@@ -7,7 +7,6 @@ from flask_cors import CORS
 
 from LCD import LCD
 
-
 app = Flask(__name__)
 CORS(app)
 
