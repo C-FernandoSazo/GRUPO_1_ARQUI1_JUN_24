@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 import RPi.GPIO as GPIO
 from time import sleep
+import random
 import threading
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+import time
+
 from LCD import LCD
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 lcd = LCD(2,0x27) 
 
@@ -16,7 +17,6 @@ GPIO.setmode(GPIO.BOARD)
 
 #Sensor Fotorresistencia
 sensor_exterior = 16
-
 #Leds
 Exterior = 38 
 Area_Recepcion = 36
@@ -27,17 +27,7 @@ Cafeteria = 24
 Bano = 26
 Area_Transporte = 22
 
-#Sensores
-sensor1 = 11 
-sensor2 = 12 
-
-# Variable para almacenar el estado de los sensores
-estado_sensor1 = False
-estado_sensor2 = False
-Entrada = False
-Salida = False
-
-personas = 0
+GPIO.setup(sensor_exterior, GPIO.IN)
 
 # Estado inicial
 state = {
@@ -57,121 +47,54 @@ state = {
     "isAlarmActive": False
 }
 
-pin_mapping = {
-    "Exterior": 38,
-    "Area_Recepcion": 36,
-    "Area_Conferencia": 40,
-    "Area_Trabajo": 35,
-    "Area_Administracion": 37,
-    "Cafeteria": 24,
-    "Bano": 26,
-    "Area_Transporte": 22
-}
+#Hilos
 
-# Variable de control para pausar y reanudar el hilo
-pause_thread = False
+#Sensor de fotoresistencia exterior
 
-# Hilos
-
-# Sensor de fotoresistencia exterior
 def sensorExterior():
-    global pause_thread
     try:
         while True:
-            print(pause_thread)
-            if not pause_thread:
-                # Lee el estado del sensor de luz
-                if GPIO.input(sensor_exterior):
-                    print("Es de noche, LED encendido")
-                    GPIO.output(Exterior, GPIO.HIGH)
-                else:
-                    print("Es de dia, LED apagado")
-                    GPIO.output(Exterior, GPIO.LOW)
+            # Lee el estado del sensor de luz
+            if GPIO.input(sensor_exterior):
+                print("Es de dia, LED apagado")
+                GPIO.output(Exterior, GPIO.LOW)
+                state["lights"][Exterior] = False
+            else:
+                print("Es de noche, LED encendido")
+                GPIO.output(Exterior, GPIO.HIGH)
+                state["lights"][Exterior] = True
             sleep(1) 
     except KeyboardInterrupt:
         GPIO.cleanup()
         print("Programa interrumpido y GPIO limpio")
 
-# Sensor digital
-# Sensor digital
-def monitorizar_entrada_salida():
-    global estado_sensor1, estado_sensor2, Entrada, Salida, personas
-    try:
-        contador = 0
-        while True:
-            estado_actual_sensor1 = GPIO.input(sensor1)
-            estado_actual_sensor2 = GPIO.input(sensor2)
-            print("estados " + str(estado_actual_sensor1) + " " + str(estado_actual_sensor2))
-            print(f"vals {Entrada} {Salida}")
-            
-            if contador == 20:
-                Entrada = False
-                Salida = False
-                contador = 0
-
-            if not estado_actual_sensor1 and estado_actual_sensor2:
-                # Primer sensor activado y segundo inactivo
-                Entrada = True
-                Salida = False
-
-            if estado_actual_sensor1 and not estado_actual_sensor2 and Entrada:
-                # Segundo sensor activado después del primero
-                print("Entro")
-                personas += 1
-                print(f"Personas: {personas}")
-                increment_people_count()
-                Entrada = False
-
-            if estado_actual_sensor1 and not estado_actual_sensor2:
-                # Segundo sensor activado y primero inactivo
-                Salida = True
-                Entrada = False
-
-            if not estado_actual_sensor1 and estado_actual_sensor2 and Salida:
-                # Primer sensor activado después del segundo
-                print("Salio")
-                personas -= 1
-                print(f"Personas: {personas}")
-                decrement_people_count()
-                Salida = False
-            contador += 1
-            sleep(0.1)  # Pequeño delay para evitar sobrecarga del CPU y debouncing
-
-    except KeyboardInterrupt:
-        print("Interrupción por teclado")
-        GPIO.cleanup()
 
 
-
-# Manejo de solicitudes
+#Manejo de solicitudes
 
 @app.route('/')
 def home():
     return "Bienvenido a la API de control del establecimiento!"
 
-# Luces
+
+#Luces
 @app.route('/api/lights/<area>', methods=['POST'])
 def toggle_light(area):
-    global pause_thread
     if area in state["lights"]:
-        pin = pin_mapping[area]
+        
         try:
             if not state["lights"][area]:
-                # Luz encendida
+               
                 lcd.message(area, 1)
                 lcd.message(f"Luz ON", 2)
-                GPIO.output(pin, GPIO.HIGH)
+              
                 state["lights"][area] = True
-                if area == "Exterior":
-                    pause_thread = True  # Pausar el hilo
             else: 
-                # Luz apagada
+                
                 lcd.message(area, 1)
                 lcd.message(f"Luz OFF", 2)
-                GPIO.output(pin, GPIO.LOW)
+                
                 state["lights"][area] = False
-                if area == "Exterior":
-                    pause_thread = False  # Reanudar el hilo
         except KeyboardInterrupt:
             GPIO.cleanup()
         return jsonify({"success": True, "lights": state["lights"]}), 200
@@ -182,6 +105,8 @@ def toggle_light(area):
 def get_people_count():
     return jsonify({"peopleCount": state["peopleCount"]}), 200
 
+
+
 @app.route('/api/peopleCount', methods=['POST'])
 def increment_people_count():
     state["peopleCount"] += 1
@@ -190,6 +115,7 @@ def increment_people_count():
 @app.route('/api/conveyor', methods=['POST'])
 def toggle_conveyor():
     state["isConveyorMoving"] = not state["isConveyorMoving"]
+    
 
     if request.method == 'POST':
         state["isGateOpen"] = not state["isGateOpen"]
@@ -222,48 +148,62 @@ def handle_gate():
 @app.route('/api/alarm', methods=['POST'])
 def toggle_alarm():
     state["isAlarmActive"] = not state["isAlarmActive"]
-    return jsonify({"success": True, "isAlarmActive": state["isAlarmActive"]}), 200
-
-def increment_people_count():
-    state["peopleCount"] += 1
-    socketio.emit('update_people_count', {'peopleCount': state["peopleCount"]})
-
-def decrement_people_count():
-    global state
-    if state["peopleCount"] > 0:
-        state["peopleCount"] -= 1
-    socketio.emit('update_people_count', {'peopleCount': state["peopleCount"]})
-
-
-def setup():
-    GPIO.setup(Exterior, GPIO.OUT)
-    GPIO.setup(Area_Recepcion, GPIO.OUT)
-    GPIO.setup(Area_Conferencia, GPIO.OUT)
-    GPIO.setup(Area_Trabajo, GPIO.OUT)
-    GPIO.setup(Area_Administracion, GPIO.OUT)
-    GPIO.setup(Cafeteria, GPIO.OUT)
-    GPIO.setup(Bano, GPIO.OUT)
-    GPIO.setup(Area_Transporte, GPIO.OUT)
-    GPIO.setup(sensor_exterior, GPIO.IN)
-    GPIO.setup(sensor1, GPIO.IN)
-    GPIO.setup(sensor2, GPIO.IN)
-
-def cleanup_gpio():
-    GPIO.cleanup()
+   
     
-if __name__ == '__main__':
+    buzzer_pin = 21
+    ldr_pin = 20
+    period = 10  
+
+  
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(buzzer_pin, GPIO.OUT)
+    GPIO.setup(ldr_pin, GPIO.IN)
+
+    is_buzzing = False
+    was_buzzing = False
+
+    def buzz():
+        GPIO.output(buzzer_pin, GPIO.HIGH)
+
+    def stop_buzz():
+        GPIO.output(buzzer_pin, GPIO.LOW)
+
+    start_time = None
+
     try:
-        setup()
-        lcd.message("<G1_ARQUI1>", 1)
-        lcd.message("<VACAS_JUN_24>", 2)
-        sleep(5)  
-        #sensorExt = threading.Thread(target=sensorExterior)
-        #sensorExt.start()
-        sensorDigital = threading.Thread(target=monitorizar_entrada_salida)
-        sensorDigital.start()
-        socketio.run(app, debug=True)
- 
+        while True:
+            sensor_value = GPIO.input(ldr_pin)
+            print(f"Valor del sensor LDR: {sensor_value}")
+            time.sleep(0.5)
+
+            if sensor_value == 0:  
+                if not is_buzzing and not was_buzzing:
+                    buzz()
+                    start_time = time.time()
+                    is_buzzing = True
+                    was_buzzing = True
+                    return jsonify({"success": True, "isAlarmActive": state["isAlarmActive"]}), 200
+
+
+            if is_buzzing and (time.time() - start_time >= period):
+                stop_buzz()
+                is_buzzing = False
+                return jsonify({"success": False, "isAlarmActive": state["isAlarmActive"]}), 200
+                
+
+            
+            if sensor_value == 1 and not is_buzzing:
+                was_buzzing = False
+
     except KeyboardInterrupt:
-        cleanup_gpio()
-    finally:
-        cleanup_gpio()
+        GPIO.cleanup()
+
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+    lcd.message("<G1_ARQUI1>", 1)
+    lcd.message("<VACAS_JUN_24>", 2)
+    sleep(5)
+
+
