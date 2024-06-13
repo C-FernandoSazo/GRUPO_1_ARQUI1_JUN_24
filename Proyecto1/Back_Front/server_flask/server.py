@@ -240,31 +240,22 @@ def alarmaPerimetral():
             print("ciclo")
             if not GPIO.input(ldr_pin):
                 print("Se detecto movimientos")
+                state["isAlarmActive"] = True
                 while True:
+                    handle_sensor_activado()
                     GPIO.output(BUZZER_PIN, GPIO.HIGH)
                     sleep(10)
                     GPIO.output(BUZZER_PIN, GPIO.LOW)
                     sleep(1)
                     break
-                state["isAlarmActive"] = True
             else:
+                handle_sensor_activado()
                 print("No movimiento ")
                 state["isAlarmActive"] = False
             sleep(0.5)
     except KeyboardInterrupt:
         GPIO.cleanup()
         print("Programa interrumpido y GPIO limpio")
-
-def buzz(pitch, duration):
-    period = 1.0 / pitch
-    delay = period / 2
-    cycles = int(duration * pitch)
-    for i in range(cycles):
-        GPIO.output(buzzer_pin, GPIO.HIGH)
-        sleep(delay)
-        GPIO.output(buzzer_pin, GPIO.LOW)
-        sleep(delay)
-
 
 # Motor Banda
 
@@ -391,46 +382,10 @@ def restarNumero():
 def increment_people_count():
     state["peopleCount"] += 1
     socketio.emit('update_people_count', {'peopleCount': state["peopleCount"]})    
-    
-    
-    import RPi.GPIO as GPIO
-import time
 
+def handle_sensor_activado():
+    socketio.emit('update_alarm_state', {'isAlarmActive': state["isAlarmActive"] })
 
-    
-def alarma():    
-    try:
-        is_buzzing = False
-        was_dark = False
-        was_buzzing = False
-        start_time = 0
-        period = 10  # Período para el buzzer activo, en segundos
-        while True:
-            sensor_value = GPIO.input(sensor_exterior) 
-            print("Valor del sensor LDR:", sensor_value)
-
-            if sensor_value:  # asumimos que un valor de 1 es "oscuro"
-                was_dark = True
-                if not is_buzzing and not was_buzzing:
-                    GPIO.output(Exterior, GPIO.HIGH)
-                    start_time = time.time()
-                    is_buzzing = True
-                    was_buzzing = True
-                    print("Buzzer activado")
-
-            if is_buzzing and (time.time() - start_time >= period):
-                GPIO.output(Exterior, GPIO.LOW)
-                is_buzzing = False
-                was_buzzing = False
-                print("Buzzer desactivado")
-
-            if not sensor_value and not is_buzzing:  # 0 es "luz"
-                was_dark = False
-
-            sleep(0.5)  # Esperar 500 milisegundos antes de leer de nuevo
-
-    except KeyboardInterrupt:
-        GPIO.cleanup()  # Limpiar configuración de GPIO al salir
         
 def setup():
 
@@ -485,8 +440,8 @@ if __name__ == '__main__':
         hilo.start()"""
         hilo2= threading.Thread(target=alarmaPerimetral)
         hilo2.start()
-        """hilo3= threading.Thread(target=sensorDigital)
-        hilo3.start()"""
+        hilo3= threading.Thread(target=sensorDigital)
+        hilo3.start()
         socketio.run(app, debug=True)
     except KeyboardInterrupt:
         GPIO.cleanup()

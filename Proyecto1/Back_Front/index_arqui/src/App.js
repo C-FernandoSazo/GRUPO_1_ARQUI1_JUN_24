@@ -212,6 +212,11 @@ function App() {
   useEffect(() => {
     const socket = socketIOClient("http://localhost:5000");
 
+    socket.on("update_alarm_state", data => {
+      setAlarmActive(data.isAlarmActive);
+    });
+
+
     socket.on("update_people_count", data => {
       setPeopleCount(data.peopleCount);
     });
@@ -437,12 +442,11 @@ function App() {
           <p>Estado</p>
           <p>{isGateOpen ? 'Abierta' : 'Cerrada'}</p>
         </div>
-        <div className="control-container">
-          <h2 className="control-title">Alarma Perimetral</h2>
-          <IconShield />
-          <p>‎ ‎ ‎ ‎ ‎ </p>
-          <p>Estado: {isAlarmActive ? 'Alarma Activada' : 'Alarma Desactivada'}</p>
-        </div>
+      <div className="control-container">
+        <h2 className="control-title">Alarma Perimetral</h2>
+        {/* Otros elementos de tu interfaz */}
+        <p>Estado: {isAlarmActive ? 'Alarma Activada' : 'Alarma Desactivada'}</p>
+      </div>
       </div>
     </div>
   );
