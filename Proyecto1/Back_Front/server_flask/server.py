@@ -40,7 +40,7 @@ Bano = 26
 Area_Transporte = 22
 
 # Sensor Perimetral
-buzzer_pin = 29
+BUZZER_PIN = 29
 ldr_pin = 31
 
 # Motor Banda
@@ -59,8 +59,6 @@ pwm2 = None
 pause_thread = False
 Entrada = False
 Salida = False
-Entrada2 = False
-Salida2 = False
 
 # Estado inicial
 state = {
@@ -240,9 +238,14 @@ def alarmaPerimetral():
         while True:
             # Lee el estado del sensor de luz
             print("ciclo")
-            if GPIO.input(ldr_pin):
+            if not GPIO.input(ldr_pin):
                 print("Se detecto movimientos")
-                sleep(5)
+                while True:
+                    GPIO.output(BUZZER_PIN, GPIO.HIGH)
+                    sleep(10)
+                    GPIO.output(BUZZER_PIN, GPIO.LOW)
+                    sleep(1)
+                    break
                 state["isAlarmActive"] = True
             else:
                 print("No movimiento ")
@@ -329,18 +332,11 @@ def asignacion(binario):
     
 def sensorInterior():
     try:
-        global Entrada2, Salida2
         contador = 0
         while True:
             estado_actual_sensor1 = GPIO.input(SensorEntrada)
             estado_actual_sensor2 = GPIO.input(SensorSalida)
             print("estados " + str(estado_actual_sensor1) + " " + str(estado_actual_sensor2))
-            print(f"vals {Entrada2} {Salida2}")
-            
-            if contador == 20:
-                Entrada2 = False
-                Salida2 = False
-                contador = 0
 
             if estado_actual_sensor1 and not estado_actual_sensor2:
                 while True:
@@ -451,7 +447,7 @@ def setup():
     # Pin Sensor Exterior
     GPIO.setup(sensor_exterior, GPIO.IN)
     # Pines Sensor Perimetral
-    GPIO.setup(buzzer_pin, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(BUZZER_PIN, GPIO.OUT)
     GPIO.setup(ldr_pin, GPIO.IN)
     # Pines Sensor Digital
     GPIO.setup(sensor1, GPIO.IN)
@@ -485,12 +481,12 @@ if __name__ == '__main__':
         lcd.message("<VACAS_JUN_24>", 2)
         sleep(5)
         lcd.clear()
-        hilo = threading.Thread(target=sensorInterior)
-        hilo.start()
-        hilo2= threading.Thread(target=alarma)
+        """hilo = threading.Thread(target=sensorInterior)
+        hilo.start()"""
+        hilo2= threading.Thread(target=alarmaPerimetral)
         hilo2.start()
-        hilo3= threading.Thread(target=sensorDigital)
-        hilo3.start()
+        """hilo3= threading.Thread(target=sensorDigital)
+        hilo3.start()"""
         socketio.run(app, debug=True)
     except KeyboardInterrupt:
         GPIO.cleanup()
