@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import socketIOClient from "socket.io-client";
 
 function IconLightbulb(props) {
   return (
@@ -209,7 +210,13 @@ function App() {
   const [isAlarmActive, setAlarmActive] = useState(false);
 
   useEffect(() => {
-    toggleGate();
+    const socket = socketIOClient("http://localhost:5000");
+
+    socket.on("update_people_count", data => {
+      setPeopleCount(data.peopleCount);
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   const toggleLight = (area) => {

@@ -75,6 +75,7 @@ state = {
         "Exterior": False
     },
     "peopleCount": 0,
+    "personas": 0,
     "isConveyorMoving": False,
     "isGateOpen": False,
     "isAlarmActive": False
@@ -327,69 +328,116 @@ def asignacion(binario):
     GPIO.output(BCD3, binario[0])
     
 def sensorInterior():
-    global Entrada2, Salida2
     try:
+        global Entrada2, Salida2
         contador = 0
-        personas = 0
         while True:
-            estado_actual_sensor1 = GPIO.input(sensor1)
-            estado_actual_sensor2 = GPIO.input(sensor2)
+            estado_actual_sensor1 = GPIO.input(SensorEntrada)
+            estado_actual_sensor2 = GPIO.input(SensorSalida)
             print("estados " + str(estado_actual_sensor1) + " " + str(estado_actual_sensor2))
             print(f"vals {Entrada2} {Salida2}")
-            print(f"Personas: {personas}")
             
             if contador == 20:
                 Entrada2 = False
                 Salida2 = False
                 contador = 0
 
-            if not estado_actual_sensor1 and estado_actual_sensor2:
-                # Primer sensor activado y segundo inactivo
-                Entrada2 = True
-                Salida2 = False
-
-            if estado_actual_sensor1 and not estado_actual_sensor2 and Entrada2:
-                # Segundo sensor activado después del primero
-                print("Entro")
-                if personas < 9:
-                    personas += 1
-                    print(f"Personas: {personas}")
-                else:
-                    lcd.message("Limite de", 1)
-                    lcd.message("Personas 9", 2)
-                Entrada2 = False
-
             if estado_actual_sensor1 and not estado_actual_sensor2:
-                # Segundo sensor activado y primero inactivo
-                Salida2 = True
-                Entrada2 = False
+                while True:
+                    estado_actual_sensor2 = GPIO.input(SensorSalida)
+                    if estado_actual_sensor2: 
+                        print("Entro")
+                        sumarNumero()
+                        break
+                    sleep(0.1)
+                print("salio del while -----------------------------------------------------------------")
 
-            if not estado_actual_sensor1 and estado_actual_sensor2 and Salida2:
-                # Primer sensor activado después del segundo
-                print("Salio")
-                if personas > 0:
-                    personas -= 1
-                    print(f"Personas: {personas}")
-                else:
-                    lcd.message("No hay", 1)
-                    lcd.message("Personas", 2)
-                Salida2 = False
+            sleep(0.5)
+            if not estado_actual_sensor1 and estado_actual_sensor2:
+                while True:
+                    estado_actual_sensor1 = GPIO.input(SensorEntrada)
+                    if estado_actual_sensor1: 
+                        print("Salio")
+                        restarNumero()
+                        break
+                    sleep(0.1)
 
-            cadenaBinario = conversorDecimalBinario(personas)
-            asignacion(cadenaBinario)
+
+        
             contador += 1
-            sleep(0.1)  # Pequeño delay para evitar sobrecarga del CPU y debouncing
+            sleep(1)  # Pequeño delay para evitar sobrecarga del CPU y debouncing
 
     except KeyboardInterrupt:
         print("Interrupción por teclado")
         GPIO.cleanup()
+        
+def sumarNumero():
+    global state
+    print(state["personas"])
+    if state["personas"] < 9:
+        state["personas"] += 1
+        cadenaBinario = conversorDecimalBinario(state["personas"])
+        asignacion(cadenaBinario)
+    else:
+        state["personas"] = 0
+        cadenaBinario = conversorDecimalBinario(state["personas"])
+        asignacion(cadenaBinario)
+
+def restarNumero():
+    global state
+    print(state["personas"])
+    if state["personas"] > 0:
+        state["personas"] -= 1
+        cadenaBinario = conversorDecimalBinario(state["personas"])
+        asignacion(cadenaBinario)
+    
 
 def increment_people_count():
     state["peopleCount"] += 1
     socketio.emit('update_people_count', {'peopleCount': state["peopleCount"]})    
     
+    
+    import RPi.GPIO as GPIO
+import time
+
+
+    
+def alarma():    
+    try:
+        is_buzzing = False
+        was_dark = False
+        was_buzzing = False
+        start_time = 0
+        period = 10  # Período para el buzzer activo, en segundos
+        while True:
+            sensor_value = GPIO.input(sensor_exterior) 
+            print("Valor del sensor LDR:", sensor_value)
+
+            if sensor_value:  # asumimos que un valor de 1 es "oscuro"
+                was_dark = True
+                if not is_buzzing and not was_buzzing:
+                    GPIO.output(Exterior, GPIO.HIGH)
+                    start_time = time.time()
+                    is_buzzing = True
+                    was_buzzing = True
+                    print("Buzzer activado")
+
+            if is_buzzing and (time.time() - start_time >= period):
+                GPIO.output(Exterior, GPIO.LOW)
+                is_buzzing = False
+                was_buzzing = False
+                print("Buzzer desactivado")
+
+            if not sensor_value and not is_buzzing:  # 0 es "luz"
+                was_dark = False
+
+            sleep(0.5)  # Esperar 500 milisegundos antes de leer de nuevo
+
+    except KeyboardInterrupt:
+        GPIO.cleanup()  # Limpiar configuración de GPIO al salir
         
 def setup():
+
     global pwm1, pwm2  # Agregar esta línea para indicar que pwm es global
     # Pines de Leds
     GPIO.setup(Exterior, GPIO.OUT)
@@ -402,6 +450,32 @@ def setup():
     GPIO.setup(Area_Transporte, GPIO.OUT)
     # Pin Sensor Exterior
     GPIO.setup(sensor_exterior, GPIO.IN)
+    # Pines Sensor Perimetral
+    GPIO.setup(buzzer_pin, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(ldr_pin, GPIO.IN)
+    # Pines Sensor Digital
+    GPIO.setup(sensor1, GPIO.IN)
+    GPIO.setup(sensor2, GPIO.IN)
+    # Pines Sensor Display
+    GPIO.setup(BCD0, GPIO.OUT)
+    GPIO.setup(BCD1, GPIO.OUT)
+    GPIO.setup(BCD2, GPIO.OUT)
+    GPIO.setup(BCD3, GPIO.OUT)
+    GPIO.setup(SensorEntrada, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(SensorSalida, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    # Pines Motor Banda
+    GPIO.setup(pinA, GPIO.OUT)
+    GPIO.setup(pinB, GPIO.OUT)
+    GPIO.setup(pinEnable, GPIO.OUT)
+    # Pines Motor Porton
+    GPIO.setup(pin1, GPIO.OUT)
+    GPIO.setup(pin2, GPIO.OUT)
+    GPIO.setup(pinEna, GPIO.OUT)
+    pwm1 = GPIO.PWM(pinEnable, 1000)  # Frecuencia de PWM de 1000 Hz
+    pwm1.start(0)
+    pwm2 = GPIO.PWM(pinEna, 1000)  # Frecuencia de PWM de 1000 Hz
+    pwm2.start(0)
+
 
 
 if __name__ == '__main__':
@@ -411,8 +485,12 @@ if __name__ == '__main__':
         lcd.message("<VACAS_JUN_24>", 2)
         sleep(5)
         lcd.clear()
-        hilo = threading.Thread(target=sensorExterior)
+        hilo = threading.Thread(target=sensorInterior)
         hilo.start()
+        hilo2= threading.Thread(target=alarma)
+        hilo2.start()
+        hilo3= threading.Thread(target=sensorDigital)
+        hilo3.start()
         socketio.run(app, debug=True)
     except KeyboardInterrupt:
         GPIO.cleanup()
