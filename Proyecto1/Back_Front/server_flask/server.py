@@ -5,12 +5,16 @@ import threading
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from LCD import LCD
+from queue import Queue
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 lcd = LCD(2, 0x27)
+
+message_queue = Queue()
+lcd_timer = threading.Timer(3.0, lambda: None)  
 
 GPIO.setmode(GPIO.BOARD)  # Asegurando que el modo de numeración de pines se establece al inicio
 
@@ -25,9 +29,9 @@ BCD3 = 13
 SensorEntrada = 19
 SensorSalida = 21
 
-# Sensor Digital
-sensor1 = 7
-sensor2 = 15
+# Puertos 7 y 15 LIbres
+
+
 
 # Leds
 Exterior = 38 
@@ -111,50 +115,6 @@ def sensorExterior():
         print("Programa interrumpido y GPIO limpio")
 
 
-# Sensor digital
-def sensorDigital():
-    global Entrada, Salida
-    try:
-        contador = 0
-        while True:
-            estado_actual_sensor1 = GPIO.input(sensor1)
-            estado_actual_sensor2 = GPIO.input(sensor2)
-            print("estados " + str(estado_actual_sensor1) + " " + str(estado_actual_sensor2))
-            print(f"vals {Entrada} {Salida}")
-            
-            if contador == 20:
-                Entrada = False
-                Salida = False
-                contador = 0
-
-            if not estado_actual_sensor1 and estado_actual_sensor2:
-                # Primer sensor activado y segundo inactivo
-                Entrada = True
-                Salida = False
-
-            if estado_actual_sensor1 and not estado_actual_sensor2 and Entrada:
-                # Segundo sensor activado después del primero
-                print("Entro")
-                increment_people_count()
-                Entrada = False
-
-            if estado_actual_sensor1 and not estado_actual_sensor2:
-                # Segundo sensor activado y primero inactivo
-                Salida = True
-                Entrada = False
-
-            if not estado_actual_sensor1 and estado_actual_sensor2 and Salida:
-                # Primer sensor activado después del segundo
-                print("Salio")
-                Salida = False
-            contador += 1
-            sleep(0.1)
-
-    except KeyboardInterrupt:
-        print("Interrupción por teclado")
-        GPIO.cleanup()
-
-
 # Manejo de solicitudes
 
 @app.route('/')
@@ -171,16 +131,14 @@ def toggle_light(area):
         try:
             if not state["lights"][area]:
                 # Luz encendida
-                lcd.message(area, 1)
-                lcd.message(f"Luz ON", 2)
+                message_queue.put((area, "Luz ON"))
                 GPIO.output(pin, GPIO.HIGH)
                 state["lights"][area] = True
                 if area == "Exterior":
                     pause_thread = True  # Pausar el hilo
             else: 
                 # Luz apagada
-                lcd.message(area, 1)
-                lcd.message(f"Luz OFF", 2)
+                message_queue.put((area, "Luz OFF"))
                 GPIO.output(pin, GPIO.LOW)
                 state["lights"][area] = False
                 if area == "Exterior":
@@ -204,11 +162,13 @@ def handle_gate():
         print("SE ACCIONA")
         try:
             if not state["isGateOpen"]:
+                message_queue.put(("Abriendo...", "Porton"))
                 motor_adelante_porton(75) 
                 sleep(5)
                 detener_porton()
                 state["isGateOpen"] = True
             else:
+                message_queue.put(("Cerrando...", "Porton"))
                 motor_atras_porton(75) 
                 sleep(5)
                 detener_porton()
@@ -223,9 +183,11 @@ def handle_gate():
 @app.route('/api/conveyor', methods=['POST'])
 def toggle_gate():
     if not state["isConveyorMoving"]:
+        message_queue.put(("La banda", "esta girando"))
         motor_adelante_banda(75)
         state["isConveyorMoving"] = True
     else:
+        message_queue.put(("La banda", "se detuvo"))
         detener_banda()
         state["isConveyorMoving"] = False
     
@@ -334,6 +296,7 @@ def sensorInterior():
                     estado_actual_sensor2 = GPIO.input(SensorSalida)
                     if estado_actual_sensor2: 
                         print("Entro")
+                        increment_people_count()
                         sumarNumero()
                         break
                     sleep(0.1)
@@ -386,6 +349,15 @@ def increment_people_count():
 def handle_sensor_activado():
     socketio.emit('update_alarm_state', {'isAlarmActive': state["isAlarmActive"] })
 
+def display_lcd():
+    global lcd_timer
+    while True:
+        if not message_queue.empty() and not lcd_timer.is_alive():
+            message = message_queue.get()
+            lcd.message(message[0], 1)
+            lcd.message(message[1], 2)
+            lcd_timer = threading.Timer(3.0, lcd.clear)  # Establece el temporizador para borrar la pantalla después de 3 segundos
+            lcd_timer.start()
         
 def setup():
 
@@ -404,10 +376,7 @@ def setup():
     # Pines Sensor Perimetral
     GPIO.setup(BUZZER_PIN, GPIO.OUT)
     GPIO.setup(ldr_pin, GPIO.IN)
-    # Pines Sensor Digital
-    GPIO.setup(sensor1, GPIO.IN)
-    GPIO.setup(sensor2, GPIO.IN)
-    # Pines Sensor Display
+    # Pines Sensor Interior
     GPIO.setup(BCD0, GPIO.OUT)
     GPIO.setup(BCD1, GPIO.OUT)
     GPIO.setup(BCD2, GPIO.OUT)
@@ -428,20 +397,19 @@ def setup():
     pwm2.start(0)
 
 
-
 if __name__ == '__main__':
     try:
         setup()
         lcd.message("<G1_ARQUI1>", 1)
         lcd.message("<VACAS_JUN_24>", 2)
-        sleep(5)
+        sleep(10)
         lcd.clear()
-        """hilo = threading.Thread(target=sensorInterior)
-        hilo.start()"""
+        lcd_thread = threading.Thread(target=display_lcd)
+        lcd_thread.start()
+        hilo = threading.Thread(target=sensorInterior)
+        hilo.start()
         hilo2= threading.Thread(target=alarmaPerimetral)
         hilo2.start()
-        hilo3= threading.Thread(target=sensorDigital)
-        hilo3.start()
         socketio.run(app, debug=True)
     except KeyboardInterrupt:
         GPIO.cleanup()

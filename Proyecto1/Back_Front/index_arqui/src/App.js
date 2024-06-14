@@ -30,6 +30,20 @@ function IconReceotion(props) {
   );
 }
 
+function IconAlarmLight(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      height="2.5em"
+      width="2.5em"
+      {...props}
+    >
+      <path d="M6 6.9L3.87 4.78l1.41-1.41L7.4 5.5 6 6.9M13 1v3h-2V1h2m7.13 3.78L18 6.9l-1.4-1.4 2.12-2.13 1.41 1.41M4.5 10.5v2h-3v-2h3m15 0h3v2h-3v-2M6 20h12a2 2 0 012 2H4a2 2 0 012-2m6-15a6 6 0 016 6v8H6v-8a6 6 0 016-6z" />
+    </svg>
+  );
+}
+
 function IconAdminLine(props) {
   return (
     <svg
@@ -444,8 +458,12 @@ function App() {
         </div>
       <div className="control-container">
         <h2 className="control-title">Alarma Perimetral</h2>
+        <IconAlarmLight />
         {/* Otros elementos de tu interfaz */}
-        <p>Estado: {isAlarmActive ? 'Alarma Activada' : 'Alarma Desactivada'}</p>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: isAlarmActive ? 'green' : 'red', marginRight: '1px' }}></div>‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎  
+          <p style={{ margin: 0 }}>‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ Estado: {isAlarmActive ? 'Alarma Activada' : 'Alarma Desactivada'}</p>
+        </div>
       </div>
       </div>
     </div>
