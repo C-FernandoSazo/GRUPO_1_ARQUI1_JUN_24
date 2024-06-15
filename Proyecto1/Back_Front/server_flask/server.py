@@ -184,11 +184,11 @@ def handle_gate():
 @app.route('/api/conveyor', methods=['POST'])
 def toggle_gate():
     if not state["isConveyorMoving"]:
-        message_queue.put(("La banda", "esta girando"))
-        motor_adelante_banda(75)
+        message_queue.put(("LA BANDA", "ESTA GIRANDO"))
+        motor_adelante_banda(100)
         state["isConveyorMoving"] = True
     else:
-        message_queue.put(("La banda", "se detuvo"))
+        message_queue.put(("LA BANDA", "SE DETUVO"))
         detener_banda()
         state["isConveyorMoving"] = False
     
@@ -388,7 +388,7 @@ def setup():
     GPIO.setup(pin1, GPIO.OUT)
     GPIO.setup(pin2, GPIO.OUT)
     GPIO.setup(pinEna, GPIO.OUT)
-    pwm1 = GPIO.PWM(pinEnable, 2000)  # Frecuencia de PWM de 1000 Hz
+    pwm1 = GPIO.PWM(pinEnable, 1000)  # Frecuencia de PWM de 1000 Hz
     pwm1.start(0)
     pwm2 = GPIO.PWM(pinEna, 1000)  # Frecuencia de PWM de 1000 Hz
     pwm2.start(0)
@@ -399,7 +399,7 @@ if __name__ == '__main__':
         setup()
         lcd.message("<G1_ARQUI1>", 1)
         lcd.message("<VACAS_JUN_24>", 2)
-        sleep(10)
+        sleep(5)
         lcd.clear()
         lcd_thread = threading.Thread(target=display_lcd)
         lcd_thread.start()
