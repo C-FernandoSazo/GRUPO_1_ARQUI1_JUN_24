@@ -54,7 +54,7 @@ pinEnable = 12
 pwm1 = None
 
 # Motor Garage
-pin1 = 23
+pin1 = 15
 pin2 = 32
 pinEna = 33
 pwm2 = None
@@ -158,18 +158,19 @@ def increment_people_count():
 @app.route('/api/gate', methods=['GET', 'POST'])
 def handle_gate():
     if request.method == 'POST':
-        state["isGateOpen"] = not state["isGateOpen"]
+        print("-----------------------------------------------PORTON------------------------------")
         print("SE ACCIONA")
         try:
             if not state["isGateOpen"]:
+                print("Porton abriendo y moviendose")
                 message_queue.put(("Abriendo...", "Porton"))
-                motor_adelante_porton(75) 
+                motor_adelante_porton(100)
                 sleep(5)
                 detener_porton()
                 state["isGateOpen"] = True
             else:
                 message_queue.put(("Cerrando...", "Porton"))
-                motor_atras_porton(75) 
+                motor_atras_porton(100) 
                 sleep(5)
                 detener_porton()
                 state["isGateOpen"] = False
@@ -223,14 +224,12 @@ def alarmaPerimetral():
 
 def motor_adelante_banda(velocidad):
     global pwm1, pinA, pinB
-    lcd.message("Abriendo...", 1)
     pwm1.ChangeDutyCycle(velocidad)
     GPIO.output(pinA, GPIO.HIGH)
     GPIO.output(pinB, GPIO.LOW)
 
 def detener_banda():
     global pwm1, pinA, pinB
-    lcd.message("Esperando...", 1)
     pwm1.ChangeDutyCycle(0)  # Motor apagado
     GPIO.output(pinA, GPIO.LOW)
     GPIO.output(pinB, GPIO.LOW)
@@ -239,21 +238,19 @@ def detener_banda():
 # Motor Garage
 def motor_adelante_porton(velocidad):
     global pwm2, pin1, pin2
-    lcd.message("Abriendo...", 1)
+    print("PORTON ADELANTE------------------------")
     pwm2.ChangeDutyCycle(velocidad)
     GPIO.output(pin1, GPIO.HIGH)
     GPIO.output(pin2, GPIO.LOW)
 
 def motor_atras_porton(velocidad):
     global pwm2, pin1, pin2
-    lcd.message("Cerrando...", 1)
     pwm2.ChangeDutyCycle(velocidad)
     GPIO.output(pin1, GPIO.LOW)
     GPIO.output(pin2, GPIO.HIGH)
 
 def detener_porton():
     global pwm2, pin1, pin2
-    lcd.message("Esperando...", 1)
     pwm2.ChangeDutyCycle(0)  # Motor apagado
     GPIO.output(pin1, GPIO.LOW)
     GPIO.output(pin2, GPIO.LOW)
@@ -291,10 +288,10 @@ def sensorInterior():
             estado_actual_sensor2 = GPIO.input(SensorSalida)
             print("estados " + str(estado_actual_sensor1) + " " + str(estado_actual_sensor2))
 
-            if estado_actual_sensor1 and not estado_actual_sensor2:
+            if not estado_actual_sensor1 and estado_actual_sensor2:
                 while True:
                     estado_actual_sensor2 = GPIO.input(SensorSalida)
-                    if estado_actual_sensor2: 
+                    if not estado_actual_sensor2: 
                         print("Entro")
                         increment_people_count()
                         sumarNumero()
@@ -303,10 +300,10 @@ def sensorInterior():
                 print("salio del while -----------------------------------------------------------------")
 
             sleep(0.5)
-            if not estado_actual_sensor1 and estado_actual_sensor2:
+            if estado_actual_sensor1 and not estado_actual_sensor2:
                 while True:
                     estado_actual_sensor1 = GPIO.input(SensorEntrada)
-                    if estado_actual_sensor1: 
+                    if not estado_actual_sensor1: 
                         print("Salio")
                         restarNumero()
                         break
@@ -391,7 +388,7 @@ def setup():
     GPIO.setup(pin1, GPIO.OUT)
     GPIO.setup(pin2, GPIO.OUT)
     GPIO.setup(pinEna, GPIO.OUT)
-    pwm1 = GPIO.PWM(pinEnable, 1000)  # Frecuencia de PWM de 1000 Hz
+    pwm1 = GPIO.PWM(pinEnable, 2000)  # Frecuencia de PWM de 1000 Hz
     pwm1.start(0)
     pwm2 = GPIO.PWM(pinEna, 1000)  # Frecuencia de PWM de 1000 Hz
     pwm2.start(0)
@@ -408,8 +405,6 @@ if __name__ == '__main__':
         lcd_thread.start()
         hilo = threading.Thread(target=sensorInterior)
         hilo.start()
-        hilo2= threading.Thread(target=alarmaPerimetral)
-        hilo2.start()
         socketio.run(app, debug=True)
     except KeyboardInterrupt:
         GPIO.cleanup()
