@@ -7,6 +7,6 @@ def counter(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [17,2,3,4,5,68,78,74,2,78,4,89,13]
+array = [17,2,3,4,5,68,78,748,2,78,4,89,13,455,4,25,855]
 resultado = counter(array)
 print(f"Cantidad de numeros: {resultado}")

@@ -2,10 +2,10 @@ import subprocess
 
 def sumar_array_ensamblador(array):
     input_data = ','.join(f"{x}" for x in array) + '\n'  # Convertir array a string
-    result = subprocess.run(['./maxAssembly'], input=input_data, text=True, capture_output=True)
+    result = subprocess.run(['./medianaAssembly'], input=input_data, text=True, capture_output=True)
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [45,85,6,9,111,41,23,5,74,11,45,23,98,1,2,3,77,200,5,255,6,4,89]
+array = [12,5,52,69,8,3,4,78,25,65,32,74,12,65,9]
 resultado = sumar_array_ensamblador(array)
-print(f"El mayor es: {resultado}")
+print(f"La media es: {resultado}")
