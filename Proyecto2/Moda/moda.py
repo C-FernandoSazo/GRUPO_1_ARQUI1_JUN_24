@@ -6,6 +6,6 @@ def sumar_array_ensamblador(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [12,52,63,6,89,6,7,41,52,6,7,41,23,6,7,66,6]
+array = [256,1,2,256]
 resultado = sumar_array_ensamblador(array)
 print(f"La moda es: {resultado}")

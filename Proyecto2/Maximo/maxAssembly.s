@@ -1,6 +1,8 @@
 .global _start
+
 .bss
 input: .space 1000
+
 .text
 _start:
     mov x0, 0
@@ -11,31 +13,41 @@ _start:
     mov x3, 0      
     mov x4, 0      
     ldr x0, =input
-bucle_maximo:
+
+bucle_lectura:
     ldrb w1, [x0], 1
-    cmp w1, 44     
-    beq comparar_numero
-    cmp w1, 10      
-    beq comparar_numero
-    cmp w1, 0      
-    beq comparar_numero
+    cmp w1, 44      
+    beq procesar_numero
+    cmp w1, 10     
+    beq fin
     sub w1, w1, 48  
-    and x1, x1, 0xFF  
-    mov x2, 10
-    mul x4, x4, x2
-    add x4, x4, x1
-    b bucle_maximo
-comparar_numero:
-    cmp x4, x3
-    csel x3, x4, x3, gt
-    mov x4, 0
-    cmp w1, 10
-    beq fin
-    cmp w1, 0
-    beq fin
-    b bucle_maximo
+    mov x2, x3
+    mov x3, 10
+    mul x2, x2, x3
+    add x3, x2, x1
+    b bucle_lectura
+
+procesar_numero:
+    cmp x3, x4
+    bgt actualizar_mayor
+    mov x3, 0
+    b bucle_lectura
+
+actualizar_mayor:
+    mov x4, x3
+    mov x3, 0
+    b bucle_lectura
+
 fin:
-    mov x0, x3
+    cmp x3, x4
+    bgt actualizar_mayor_final
+    b salir
+
+actualizar_mayor_final:
+    mov x4, x3
+
+salir:
+    mov x0, x4
     mov x8, 93
     svc 0
     

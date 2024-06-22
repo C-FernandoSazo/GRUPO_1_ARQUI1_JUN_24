@@ -82,4 +82,7 @@ fin:
     mov w0, w1
     mov x8, 93
     svc 0
+    mov x8, 94
+    svc 0
+    
     

@@ -6,6 +6,6 @@ def sumar_array_ensamblador(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [45,85,6,9,111,41,23,5,74,11,45,23,98,1,2,3,77,200,5,255,6,4,89]
+array = [45,85,6,9,111,41,23,5,74,11,45,23,98,3,77,20,5,25,6,4,62,45]
 resultado = sumar_array_ensamblador(array)
 print(f"El mayor es: {resultado}")

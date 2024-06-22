@@ -6,6 +6,6 @@ def sumar_array_ensamblador(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [12,5,52,69,8,3,4,78,25,65,32,74,12,65,9]
+array = [12,5,52,69,8,3,4,78,25,655,32,74,12,65,9,789]
 resultado = sumar_array_ensamblador(array)
 print(f"La media es: {resultado}")

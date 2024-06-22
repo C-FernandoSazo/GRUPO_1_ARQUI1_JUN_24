@@ -6,6 +6,6 @@ def desviacion_estandar(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [45,2,74,8,3,56,0,1,25]
+array = [45,2,74,8,3,56,0,1,25, 45, 125,6,569,788]
 resultado = desviacion_estandar(array)
 print(f"La desviacion estandar es: {resultado}")

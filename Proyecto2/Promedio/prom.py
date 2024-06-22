@@ -6,7 +6,7 @@ def sumar_array_ensamblador(array):
     return result.returncode  # Convertir salida a entero
 
 # Ejemplo de uso:
-array = [12,45,2,8,81,7,63,7,1,2,7,96,5]
+array = [12,45,2,8,81,7,63,7,1,2,7,96,5, 852, 45]
 resultado = sumar_array_ensamblador(array)
 print(f"El promedio es: {resultado}")
 
