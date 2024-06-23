@@ -1,0 +1,380 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #121212;
+  color: white;
+  overflow-x: hidden; /* Oculta desbordamiento horizontal */
+  overflow-y: auto; /* Permite desplazamiento vertical si es necesario */
+}
+
+.container {
+  text-align: center;
+  width: 90%; /* Ajusta el ancho del contenedor */
+  max-width: 1200px; /* Establece un máximo ancho para grandes pantallas */
+  margin: 20px auto; /* Añade un margen arriba y abajo y auto para los lados */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra los elementos horizontalmente */
+  padding-top: 60px; /* Espacio adicional en la parte superior para el título fijo */
+}
+
+h1 {
+
+  top: 10px; /* Espacio desde la parte superior de la ventana */
+  left: 50%; /* Centra horizontalmente */
+  z-index: 1000; /* Asegura que el título se muestre sobre otros contenidos */
+  background-color: #121212; /* Fondo para asegurar legibilidad */
+  padding: 10px 20px; /* Espaciado interno para darle forma al título */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Sombra para destacar el título */
+  width: auto; /* Anchura automática basada en el contenido */
+  max-width: 90%; /* Máximo ancho para evitar desbordamiento */
+}
+.symbol {
+  font-size: 40px;
+  letter-spacing: 0em;
+  color: #ccc;
+}
+
+.climate {
+  color: #888; /* Color gris para los símbolos */
+  font-size: 40px; /* Ajustar tamaño según necesidades */
+}
+
+
+.button-panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1); /* Fondo ligeramente visible para resaltar */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Sombra suave para más profundidad */
+}
+
+.ui-btn {
+--btn-default-bg: rgb(41, 41, 41);
+--btn-padding: 15px 20px;
+--btn-hover-bg: rgb(51, 51, 51);
+--btn-transition: 0.3s;
+--btn-letter-spacing: 0.1rem;
+--btn-animation-duration: 1.2s;
+--btn-shadow-color: rgba(0, 0, 0, 0.137);
+--btn-shadow: 0 2px 10px 0 var(--btn-shadow-color);
+--hover-btn-color: orange;
+--default-btn-color: #fff;
+--font-size: 16px;
+--font-weight: 600;
+--font-family: Menlo, Roboto Mono, monospace;
+}
+
+
+.ui-btn {
+box-sizing: border-box;
+padding: var(--btn-padding);
+display: flex;
+align-items: center;
+justify-content: center;
+color: var(--default-btn-color);
+font: var(--font-weight) var(--font-size) var(--font-family);
+background: var(--btn-default-bg);
+border: none;
+cursor: pointer;
+transition: var(--btn-transition);
+overflow: hidden;
+box-shadow: var(--btn-shadow);
+}
+
+.ui-btn span {
+letter-spacing: var(--btn-letter-spacing);
+transition: var(--btn-transition);
+box-sizing: border-box;
+position: relative;
+background: inherit;
+}
+
+.ui-btn span::before {
+box-sizing: border-box;
+position: absolute;
+content: "";
+background: inherit;
+}
+
+.ui-btn:hover,
+.ui-btn:focus {
+background: var(--btn-hover-bg);
+}
+
+.ui-btn:hover span,
+.ui-btn:focus span {
+color: var(--hover-btn-color);
+}
+
+.ui-btn:hover span::before,
+.ui-btn:focus span::before {
+animation: chitchat linear both var(--btn-animation-duration);
+}
+
+@keyframes chitchat {
+0% {
+  content: "#";
+}
+
+5% {
+  content: ".";
+}
+
+10% {
+  content: "^{";
+}
+
+15% {
+  content: "-!";
+}
+
+20% {
+  content: "#$_";
+}
+
+25% {
+  content: "№:0";
+}
+
+30% {
+  content: "#{+.";}35%{content: "@}-?";
+}
+
+40% {
+  content: "?{4@%";
+}
+
+45% {
+  content: "=.,^!";
+}
+
+50% {
+  content: "?2@%";
+}
+
+55% {
+  content: "\;1}]";
+}
+
+60% {
+  content: "?{%:%";
+  right: 0;
+}
+
+65% {
+  content: "|{f[4";
+  right: 0;
+}
+
+70% {
+  content: "{4%0%";
+  right: 0;
+}
+
+75% {
+  content: "'1_0<";
+  right: 0;
+}
+
+80% {
+  content: "{0%";
+  right: 0;
+}
+
+85% {
+  content: "]>'";
+  right: 0;
+}
+
+90% {
+  content: "4";
+  right: 0;
+}
+
+95% {
+  content: "2";
+  right: 0;
+}
+
+100% {
+  content: "";
+  right: 0;
+}
+}
+
+.info-panel {
+  margin-top: 20px;
+}
+
+.panel-content {
+  display: none; /* Ocultar todos los paneles inicialmente */
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border-radius: 5px;
+}
+
+.info-panel {
+  margin-top: 20px;
+}
+
+.panel-content {
+  display: none;
+  padding: 15px;
+  background-color: #333; /* Fondo oscuro para destacar el contenido */
+  color: white;
+  border-radius: 5px;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px; /* Espacio entre el título y la tabla */
+  border-collapse: collapse;
+  border: none; /* Sin bordes externos */
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #444; /* Bordes sutiles entre filas */
+}
+
+th {
+  font-weight: normal; /* Sin negrita en los encabezados */
+  color: #aaa; /* Color suave para los encabezados */
+  text-transform: uppercase; /* Letras mayúsculas para un look más limpio */
+  letter-spacing: 0.1em; /* Espaciado entre letras para mejorar la legibilidad */
+  background-color: transparent; /* Sin fondo diferente para los encabezados */
+}
+
+tr:nth-child(even) {
+  background-color: #2f2f2f; /* Alternar colores de fondo para las filas */
+}
+
+tr:hover {
+  background-color: #3a3a3a; /* Resaltar la fila al pasar el mouse */
+}
+
+h2 {
+  text-align: left;
+  color: #ccc; /* Título claro y minimalista */
+  padding-left: 10px; /* Alineación del título */
+  font-size: 1.2em; /* Tamaño moderado para el título */
+  border-bottom: 1px solid #444; /* Línea sutil debajo del título */
+  padding-bottom: 10px; /* Espacio debajo del título */
+  margin-bottom: 20px; /* Espacio antes de la tabla */
+}
+
+p {
+  font-weight: normal;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background-color: transparent;
+}
+
+.cardContainer {
+width: fit-content;
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.card {
+position: relative;
+width: 600px;
+height: 250px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: space-between;
+padding: 20px 10px;
+border-radius: 10px;
+backdrop-filter: blur(30px);
+background-color: rgba(65, 65, 65, 0.308);
+border: 1px solid rgba(255, 255, 255, 0.089);
+cursor: pointer;
+}
+
+.city {
+font-weight: 700;
+font-size: 0.9em;
+letter-spacing: 1.2px;
+color: white;
+}
+
+.weather {
+font-weight: 500;
+font-size: 0.7em;
+letter-spacing: 1.2px;
+color: rgb(197, 197, 197);
+}
+
+.temp {
+font-size: 1.8em;
+color: white;
+}
+
+.minmaxContainer {
+width: 100%;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.min,
+.max {
+width: 50%;
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+justify-content: center;
+padding: 0px 20px;
+gap: 4px;
+}
+
+.max {
+align-items: flex-start;
+border-left: 2px solid white;
+}
+
+.maxHeading,
+.minHeading {
+font-size: 0.7em;
+font-weight: 600;
+color: white;
+}
+
+.maxTemp,
+.minTemp {
+font-size: 0.6em;
+font-weight: 500;
+color: rgb(197, 197, 197);
+}
+
+.cardContainer::before {
+width: 100px;
+height: 100px;
+content: "";
+position: absolute;
+background-color: rgb(144, 161, 255);
+z-index: -1;
+border-radius: 50%;
+left: 100px;
+top: 50px;
+transition: all 1s;
+}
+
+.cardContainer:hover::before {
+transform: translate(-50px, 50px);
+}
+
+.info-panel, .cardContainer {
+  margin-top: 20px;
+}
