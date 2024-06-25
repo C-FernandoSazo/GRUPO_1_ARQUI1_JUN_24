@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+import RPi.GPIO as GPIO
 import random
 from flask_cors import CORS
 import threading
@@ -6,14 +7,45 @@ import time
 import adafruit_dht
 import board
 import subprocess
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 lock = threading.Lock()
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Array global para almacenar los datos
 global_data = []
 humedad_data = []
+calidad_data = []
+
+def luminucidad():
+    try:
+        while True:
+            estado_sensor = GPIO.input(22)
+            if estado_sensor == GPIO.LOW:
+                calidad = "Soleado"
+            else:
+                calidad = "Nublado"
+            print(f"Estado del sensor: {calidad}")
+            socketio.emit('luminosidad', {'status': calidad})
+            time.sleep(3)
+    except KeyboardInterrupt:
+        print("Programa terminado")
+        
+def leer_sensor_mq2():
+    try:
+        while True:
+            estado_sensor = GPIO.input(17)
+            if estado_sensor == GPIO.LOW:
+                calidada = "Mala"
+            else:
+                calidada = "Buena"
+            print(f"Calidad del aire: {calidada}")
+            socketio.emit('calidad_aire', {'quality': calidada})
+            time.sleep(4)
+    except KeyboardInterrupt:
+        print("Programa terminado")
 
 def fill_data():
     # Configura el sensor DHT11 en el pin GPIO 23
@@ -109,8 +141,17 @@ def get_data(panel_id):
         "mode": mod
     }
     return jsonify(data)
+    
+def setup():
+    GPIO.setup(22, GPIO.IN)
+    GPIO.setup(17, GPIO.IN)
 
 if __name__ == '__main__':
+    setup()
     data_thread = threading.Thread(target=fill_data)
     data_thread.start()
-    app.run(debug=True, use_reloader=False)
+    hilolumi = threading.Thread(target=luminucidad)
+    hilolumi.start()
+    hilo_mq2 = threading.Thread(target=leer_sensor_mq2)
+    hilo_mq2.start()
+    socketio.run(app, debug=True, use_reloader = False)

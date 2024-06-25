@@ -1,20 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Conéctate a tu servidor de Flask
 
 function ClimateTech() {
   const [activePanel, setActivePanel] = useState(null);
   const [tempData, setTempData] = useState({});
   const [humData, setHumData] = useState({});
   const [vientoData, setVientoData] = useState({});
-  const [lumData, setLumData] = useState({status: 'Soleado'}); // Suponiendo estado inicial
-  const [aireData, setAireData] = useState({quality: 'Buena'}); // Suponiendo estado inicial
+  const [lumData, setLumData] = useState({ status: 'Soleado' });
+  const [aireData, setAireData] = useState({ quality: 'Buena' });
   const [presData, setPresData] = useState({});
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Conectado a Socket.IO');
+    });
+
+    socket.on('luminosidad', (data) => {
+      setLumData(data);
+    });
+
+    socket.on('calidad_aire', (data) => {
+      setAireData(data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Desconectado de Socket.IO');
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('luminosidad');
+      socket.off('calidad_aire');
+      socket.off('disconnect');
+    };
+  }, []);
 
   const fetchData = async (panelId) => {
     fetch(`http://localhost:5000/data/${panelId}`, { method: 'GET' })
       .then(response => response.json())
       .then(data => {
-        switch(panelId) {
+        switch (panelId) {
           case 'temp':
             setTempData(data);
             break;
@@ -39,6 +67,7 @@ function ClimateTech() {
       })
       .catch(error => console.error('Failed to fetch data:', error));
   };
+
   const showPanel = (panelId) => {
     setActivePanel(activePanel === panelId ? null : panelId);
     fetchData(panelId);
@@ -60,16 +89,15 @@ function ClimateTech() {
         <button className="ui-btn" onClick={() => showPanel('pres')}><span>P. Barométrica</span></button>
       </div>
       <div id="infoPanel" className="info-panel">
-        {/* Paneles individuales para cada tipo de dato */}
         {Object.entries({ temp: tempData, hum: humData, viento: vientoData, lum: lumData, aire: aireData, pres: presData }).map(([key, data]) => (
-          <div key={key} id={key} className="panel-content" style={{display: activePanel === key ? 'block' : 'none'}}>
+          <div key={key} id={key} className="panel-content" style={{ display: activePanel === key ? 'block' : 'none' }}>
             <h2>{key === 'temp' ? 'Temperatura' :
-                 key === 'hum' ? 'Humedad' :
-                 key === 'viento' ? 'Velocidad del Viento' :
-                 key === 'lum' ? 'Luminosidad' :
-                 key === 'aire' ? 'Calidad del Aire' : 'Presión Barométrica'}</h2>
+              key === 'hum' ? 'Humedad' :
+                key === 'viento' ? 'Velocidad del Viento' :
+                  key === 'lum' ? 'Luminosidad' :
+                    key === 'aire' ? 'Calidad del Aire' : 'Presión Barométrica'}</h2>
             {key === 'lum' || key === 'aire' ?
-              <p>{key === 'lum' ? 'Actualmente está: ${data.status || Soleado}' : 'La calidad del aire es: ${data.quality || Buena}'}</p> :
+              <p>{key === 'lum' ? `Actualmente está: ${data.status || 'Soleado'}` : `La calidad del aire es: ${data.quality || 'Buena'}`}</p> :
               <table>
                 <thead>
                   <tr>
@@ -99,7 +127,7 @@ function ClimateTech() {
         ))}
       </div>
       <div className="cardContainer">
-      <WeatherCard />
+        <WeatherCard />
       </div>
     </div>
   );
