@@ -1,83 +1,119 @@
+.section .data
+input_file: .asciz "entradaBaro.txt"
+output_file: .asciz "Resul_des_bar.txt"
+buffer: .space 1024
+buffer2: .space 256
+numbers: .space 1024
+count: .quad 0
+sum: .quad 0
+newline: .asciz "\n"
+
+.section .text
 .global _start
-.bss
-input: .space 100
-numeros: .space 400
-suma_cuadrados: .quad 0
 
-.text
 _start:
-    mov x0, 0
-    ldr x1, =input
-    mov x2, 100
-    mov x8, 63
-    svc 0
+    mov r0, #-100
+    ldr r1, =input_file
+    mov r2, #0
+    mov r7, #5
+    swi 0
+    cmp r0, #0
+    moveq r0, #-1
+    beq error
+    mov r9, r0
 
-    mov x4, 0
-    mov x5, 0
-    mov x6, 0
-    ldr x0, =input
-    ldr x1, =numeros
+    mov r0, r9
+    ldr r1, =buffer
+    mov r2, #1024
+    mov r7, #3
+    swi 0
+    cmp r0, #0
+    moveq r0, #-1
+    beq error
+    mov r10, r0
 
-leer_numeros:
-    ldrb w2, [x0], 1
-    cmp w2, 44
-    beq guardar_numero
-    cmp w2, 10
-    beq calcular_media
-    sub w2, w2, 48
-    mov w3, w4
-    mov w4, 10
-    mul w3, w3, w4
-    add w4, w3, w2
-    b leer_numeros
+    mov r6, #0
+    ldr r5, =numbers
+    mov r4, #0
+    ldr r1, =buffer
 
-guardar_numero:
-    str w4, [x1], 4
-    add x6, x6, x4
-    mov w4, 0
-    add x5, x5, 1
-    b leer_numeros
+parse_loop:
+    mov r0, r1
+    bl atoi
+    cmp r0, #-1
+    beq parse_end
+    str r0, [r5, r4, LSL #2]
+    add r4, r4, #1
+    add r6, r6, r0
+    ldrb r2, [r1], #1
+    cmp r2, #','
+    beq parse_loop
+    cmp r2, #0
+    bne parse_loop
 
-calcular_media:
-    str w4, [x1], 4
-    add x6, x6, x4
-    add x5, x5, 1
-    sdiv x7, x6, x5
+parse_end:
+    ldr r3, =sum
+    str r6, [r3]
+    ldr r3, =count
+    str r4, [r3]
 
-    ldr x0, =numeros
-    mov x1, 0
-    ldr x2, =suma_cuadrados
-    str xzr, [x2]
+    mov r3, #10
+    mul r6, r6, r3
+    bl divide
+    mov r3, #0
+    mov r4, #0
 
-calcular_diferencias:
-    ldr w3, [x0], 4
-    sub w4, w3, w7
-    mul w4, w4, w4
-    ldr x9, [x2]
-    add x9, x9, x4
-    str x9, [x2]
-    add x1, x1, 1
-    cmp x1, x5
-    blt calcular_diferencias
+calc_variance_loop:
+    ldr r2, [r5, r4, LSL #2]
+    mul r2, r2, #10
+    sub r2, r2, r6
+    mul r2, r2, r2
+    add r3, r3, r2
+    add r4, r4, #1
+    cmp r4, r6
+    blt calc_variance_loop
 
-    ldr x0, [x2]
-    sdiv x0, x0, x5
-    
-    mov x1, x0
-    lsr x1, x1, 1
-    mov x2, 10
-    
-raiz_cuadrada:
-    sdiv x3, x0, x1
-    add x3, x3, x1
-    lsr x1, x3, 1
-    subs x2, x2, 1
-    bne raiz_cuadrada
+    sub r6, r6, #1
+    bl divide
 
-fin:
-    mov x0, x1
-    mov x8, 93
-    svc 0
-    mov x8, 94
-    svc 0
-    
+    mov r0, r3
+    bl sqrt
+
+    ldr r1, =buffer2
+    bl itoa_fixed_point
+
+    mov r0, #-100
+    ldr r1, =output_file
+    mov r2, #577
+    mov r3, #644
+    mov r7, #5
+    swi 0
+    cmp r0, #0
+    moveq r0, #-1
+    beq error
+    mov r8, r0
+
+    mov r0, r8
+    ldr r1, =buffer2
+    bl write_string
+
+    mov r0, r8
+    ldr r1, =newline
+    bl write_string
+
+    mov r0, r9
+    mov r7, #6
+    swi 0
+
+    mov r0, r8
+    mov r7, #6
+    swi 0
+
+    mov r0, #0
+    mov r7, #1
+    swi 0
+
+error:
+    mov r0, #-1
+    mov r7, #1
+    swi 0

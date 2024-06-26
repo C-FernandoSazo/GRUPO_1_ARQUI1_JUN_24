@@ -22,6 +22,7 @@ wind_interval = 5  # Intervalo de tiempo para medir en segundos
 global_data = []
 humedad_data = []
 calidad_data = []
+wind_speeds = [] 
 
 def luminucidad():
     try:
@@ -73,11 +74,16 @@ def velocidad():
 
             if time.time() - start_time >= wind_interval:
                 wind_speed = calculate_wind_speed(wind_interval)
-                print(f"Velocidad del viento: {wind_speed:.2f} km/h")
-                wind_count = 0  # Reiniciar el contador
+                if wind_speed > 0:
+                    velocidadd = round(wind_speed)
+                    wind_speeds.append(velocidadd)
+                    print(f"Velocidad del viento: {wind_speed:.2f} km/h")
+                    time.sleep(10)  
+                wind_count = 0  
                 start_time = time.time()
     except KeyboardInterrupt:
         print("Medición terminada por el usuario")
+        print("Velocidades registradas:", wind_speeds)
 
 def fill_data():
     # Configura el sensor DHT11 en el pin GPIO 23
@@ -156,23 +162,43 @@ def get_data(panel_id):
             "mode": mod
         }
         return jsonify(data)
-    average = calculate_average(global_data)  # Pasar global_data a la función
-    median = mediana(global_data)
-    cont = contador(global_data)
-    desvst = desviacionest(global_data)
-    maxi = maximo(global_data)
-    mini = minimo(global_data)
-    mod = moda(global_data)
-    data = {
-        "count": cont,
-        "average": average,
-        "median": median,
-        "stdDev": desvst,
-        "max": maxi,
-        "min": mini,
-        "mode": mod
-    }
-    return jsonify(data)
+    if panel_id == "temp":
+        average = calculate_average(global_data)  # Pasar global_data a la función
+        median = mediana(global_data)
+        cont = contador(global_data)
+        desvst = desviacionest(global_data)
+        maxi = maximo(global_data)
+        mini = minimo(global_data)
+        mod = moda(global_data)
+        data = {
+            "count": cont,
+            "average": average,
+            "median": median,
+            "stdDev": desvst,
+            "max": maxi,
+            "min": mini,
+            "mode": mod
+        }
+        return jsonify(data)
+    if panel_id == "viento":
+        print(wind_speeds)
+        average = calculate_average(wind_speeds)  # Pasar global_data a la función
+        median = mediana(wind_speeds)
+        cont = contador(wind_speeds)
+        desvst = desviacionest(wind_speeds)
+        maxi = maximo(wind_speeds)
+        mini = minimo(wind_speeds)
+        mod = moda(wind_speeds)                                            
+        data = {
+            "count": cont,
+            "average": average,
+            "median": median,
+            "stdDev": desvst,
+            "max": maxi,
+            "min": mini,
+            "mode": mod
+        }
+        return jsonify(data)
     
 def setup():
     GPIO.setup(22, GPIO.IN)

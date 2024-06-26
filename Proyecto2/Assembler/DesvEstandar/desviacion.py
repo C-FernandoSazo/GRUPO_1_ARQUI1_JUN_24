@@ -1,11 +1,26 @@
 import subprocess
 
-def desviacion_estandar(array):
-    input_data = ','.join(f"{x}" for x in array) + '\n'  # Convertir array a string
-    result = subprocess.run(['./desvAssembly'], input=input_data, text=True, capture_output=True)
-    return result.returncode  # Convertir salida a entero
+# Datos para procesar
+datos = [23, 45, 67, 89, 21, 34]
 
-# Ejemplo de uso:
-array = [45,2,74,8,3,56,0,1,25, 45, 125,6,569,788]
-resultado = desviacion_estandar(array)
-print(f"La desviacion estandar es: {resultado}")
+# Convertir los datos a una cadena separada por comas
+contenido = ','.join(map(str, datos))
+
+# Escribir los datos en el archivo de entrada
+with open("entradaBaro.txt", "w") as archivo:
+    archivo.write(contenido)
+
+# Asegúrate de que el path al ejecutable es correcto
+path_al_ejecutable = "./desviacion"
+
+# Ejecutar el programa en ensamblador
+result = subprocess.run([path_al_ejecutable], capture_output=True, text=True)
+
+# Imprimir la salida y errores si los hay
+print("Salida:", result.stdout)
+print("Errores:", result.stderr)
+
+# Leer el archivo de salida y mostrar los resultados
+with open("Resul_des_bar.txt", "r") as file:
+    output = file.read()
+    print("Contenido del archivo de salida:", output)
