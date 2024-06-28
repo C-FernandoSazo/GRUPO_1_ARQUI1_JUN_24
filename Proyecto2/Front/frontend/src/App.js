@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000'); // Conéctate a tu servidor de Flask
+const socket = io('http://localhost:5000');
 
 function ClimateTech() {
   const [activePanel, setActivePanel] = useState(null);
@@ -10,7 +10,7 @@ function ClimateTech() {
   const [humData, setHumData] = useState({});
   const [vientoData, setVientoData] = useState({});
   const [lumData, setLumData] = useState({ status: 'Soleado' });
-  const [aireData, setAireData] = useState({ quality: 'Buena' });
+  const [aireData, setAireData] = useState({ bueno: 0, malo: 0 });
   const [presData, setPresData] = useState({});
 
   useEffect(() => {
@@ -91,13 +91,19 @@ function ClimateTech() {
       <div id="infoPanel" className="info-panel">
         {Object.entries({ temp: tempData, hum: humData, viento: vientoData, lum: lumData, aire: aireData, pres: presData }).map(([key, data]) => (
           <div key={key} id={key} className="panel-content" style={{ display: activePanel === key ? 'block' : 'none' }}>
-            <h2>{key === 'temp' ? 'Temperatura' :
-              key === 'hum' ? 'Humedad' :
-                key === 'viento' ? 'Velocidad del Viento' :
+            <h2>{key === 'temp' ? 'Temperatura (°C)' :
+              key === 'hum' ? 'Humedad (%)' :
+                key === 'viento' ? 'Velocidad del Viento (Km/h)' :
                   key === 'lum' ? 'Luminosidad' :
-                    key === 'aire' ? 'Calidad del Aire' : 'Presión Barométrica'}</h2>
-            {key === 'lum' || key === 'aire' ?
-              <p>{key === 'lum' ? `Actualmente está: ${data.status || 'Soleado'}` : `La calidad del aire es: ${data.quality || 'Buena'}`}</p> :
+                    key === 'aire' ? 'Calidad del Aire' : 'Presión Barométrica (daPa)'}</h2>
+            {key === 'lum' ? (
+              <p>Actualmente está: {data.status || 'Soleado'}</p>
+            ) : key === 'aire' ? (
+              <div>
+                <p>Calidad del aire buena: {data.bueno}</p>
+                <p>Calidad del aire mala: {data.malo}</p>
+              </div>
+            ) : (
               <table>
                 <thead>
                   <tr>
@@ -122,7 +128,7 @@ function ClimateTech() {
                   </tr>
                 </tbody>
               </table>
-            }
+            )}
           </div>
         ))}
       </div>

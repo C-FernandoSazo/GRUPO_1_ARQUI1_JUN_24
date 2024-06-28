@@ -24,7 +24,7 @@ import smbus
 import time
 from ctypes import c_short
  
-DEVICE = 0x27 # Default device I2C address
+DEVICE = 0x77 # Default device I2C address
  
 #bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
 bus = smbus.SMBus(1) # Rev 2 Pi uses 1 

@@ -1,13 +1,13 @@
 .global _start
 .bss
-input: .space 100
-numeros: .space 400
+input: .space 1024
+numeros: .space 1024
 
 .text
 _start:
     mov x0, 0
     ldr x1, =input
-    mov x2, 100
+    mov x2, 1024
     mov x8, 63
     svc 0
 
