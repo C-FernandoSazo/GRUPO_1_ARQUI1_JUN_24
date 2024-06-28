@@ -1,26 +1,35 @@
 import subprocess
 
 # Datos para procesar
-datos = [23, 45, 67, 89, 21, 34]
+datos_opcion1 = [23, 45, 67, 89, 21, 34]
+datos_opcion2 = [12, 34, 56, 78, 90, 11]
+
+# Solicitar al usuario que elija una opción
+opcion = input("Elige una opción (1 o 2): ")
+
+# Validar la opción y asignar los datos correspondientes
+if opcion == '1':
+    datos = datos_opcion1
+elif opcion == '2':
+    datos = datos_opcion2
+else:
+    print("Opción no válida. Saliendo del programa.")
+    exit(1)
 
 # Convertir los datos a una cadena separada por comas
-contenido = ','.join(map(str, datos))
+contenido = ','.join(map(str, datos)) + '\n'
 
-# Escribir los datos en el archivo de entrada
-with open("entradaBaro.txt", "w") as archivo:
+with open("desviacion.txt", "w") as archivo:
     archivo.write(contenido)
 
 # Asegúrate de que el path al ejecutable es correcto
 path_al_ejecutable = "./desviacion"
 
-# Ejecutar el programa en ensamblador
-result = subprocess.run([path_al_ejecutable], capture_output=True, text=True)
+# Ejecutar el programa en ensamblador, pasando los datos como argumento
+result = subprocess.run([path_al_ejecutable], input=contenido, text=True, capture_output=True)
 
-# Imprimir la salida y errores si los hay
-print("Salida:", result.stdout)
-print("Errores:", result.stderr)
-
-# Leer el archivo de salida y mostrar los resultados
-with open("Resul_des_bar.txt", "r") as file:
+with open("resdesviacion.txt", "r") as file:
     output = file.read()
-    print("Contenido del archivo de salida:", output)
+    print("Resultado", output)
+
+

@@ -1,119 +1,214 @@
 .section .data
-input_file: .asciz "entradaBaro.txt"
-output_file: .asciz "Resul_des_bar.txt"
-buffer: .space 1024
-buffer2: .space 256
-numbers: .space 1024
-count: .quad 0
-sum: .quad 0
-newline: .asciz "\n"
+input_file:     .asciz "desviacion.txt"
+output_file:    .asciz "resdesviacion.txt"
+buffer:         .space 1024
+buffer2:        .space 256
+numbers:        .space 1024
+count:          .quad 0
+sum:            .quad 0
+newline:        .asciz "\n"
 
 .section .text
 .global _start
 
 _start:
-    mov r0, #-100
-    ldr r1, =input_file
-    mov r2, #0
-    mov r7, #5
-    swi 0
-    cmp r0, #0
-    moveq r0, #-1
-    beq error
-    mov r9, r0
+    mov x0, #-100
+    ldr x1, =input_file
+    mov x2, #0
+    mov x8, #56
+    svc #0
+    cbz x0, error
+    mov x9, x0
 
-    mov r0, r9
-    ldr r1, =buffer
-    mov r2, #1024
-    mov r7, #3
-    swi 0
-    cmp r0, #0
-    moveq r0, #-1
-    beq error
-    mov r10, r0
+    mov x0, x9
+    ldr x1, =buffer
+    mov x2, #1024
+    mov x8, #63
+    svc #0
+    cbz x0, error
+    mov x19, x0
 
-    mov r6, #0
-    ldr r5, =numbers
-    mov r4, #0
-    ldr r1, =buffer
+    mov x20, #0
+    ldr x21, =numbers
+    mov x22, #0
+    ldr x1, =buffer
 
 parse_loop:
-    mov r0, r1
+    mov x0, x1
     bl atoi
-    cmp r0, #-1
+
+    cmp x0, #-1
     beq parse_end
-    str r0, [r5, r4, LSL #2]
-    add r4, r4, #1
-    add r6, r6, r0
-    ldrb r2, [r1], #1
-    cmp r2, #','
-    beq parse_loop
-    cmp r2, #0
-    bne parse_loop
+
+    str w0, [x21, x22, lsl #2]
+    add x22, x22, #1
+    add x20, x20, x0
+
+parse_next:
+    ldrb w2, [x1], #1
+    cmp w2, #','
+    b.eq parse_loop
+    cmp w2, #0
+    b.ne parse_next
 
 parse_end:
-    ldr r3, =sum
-    str r6, [r3]
-    ldr r3, =count
-    str r4, [r3]
+    ldr x23, =sum
+    str x20, [x23]
+    ldr x23, =count
+    str x22, [x23]
 
-    mov r3, #10
-    mul r6, r6, r3
-    bl divide
-    mov r3, #0
-    mov r4, #0
+    mov x23, #10
+    mul x20, x20, x23
+    sdiv x24, x20, x22
+
+    mov x25, #0
+    mov x26, #0
 
 calc_variance_loop:
-    ldr r2, [r5, r4, LSL #2]
-    mul r2, r2, #10
-    sub r2, r2, r6
-    mul r2, r2, r2
-    add r3, r3, r2
-    add r4, r4, #1
-    cmp r4, r6
-    blt calc_variance_loop
+    ldr w27, [x21, x26, lsl #2]
+    mov x28, #10
+    mul x27, x27, x28
+    sub x27, x27, x24
+    mul x27, x27, x27
+    add x25, x25, x27
+    add x26, x26, #1
+    cmp x26, x22
+    b.lt calc_variance_loop
 
-    sub r6, r6, #1
-    bl divide
+    sub x22, x22, #1
+    sdiv x25, x25, x22
 
-    mov r0, r3
+    mov x0, x25
     bl sqrt
 
-    ldr r1, =buffer2
+    ldr x1, =buffer2
     bl itoa_fixed_point
 
-    mov r0, #-100
-    ldr r1, =output_file
-    mov r2, #577
-    mov r3, #644
-    mov r7, #5
-    swi 0
-    cmp r0, #0
-    moveq r0, #-1
-    beq error
-    mov r8, r0
+    mov x0, #-100
+    ldr x1, =output_file
+    mov x2, #577
+    mov x3, #0644
+    mov x8, #56
+    svc #0
+    cbz x0, error
+    mov x10, x0
 
-    mov r0, r8
-    ldr r1, =buffer2
+    mov x0, x10
+    ldr x1, =buffer2
     bl write_string
 
-    mov r0, r8
-    ldr r1, =newline
+    mov x0, x10
+    ldr x1, =newline
     bl write_string
 
-    mov r0, r9
-    mov r7, #6
-    swi 0
+    mov x0, x9
+    mov x8, #57
+    svc #0
 
-    mov r0, r8
-    mov r7, #6
-    swi 0
+    mov x0, x10
+    mov x8, #57
+    svc #0
 
-    mov r0, #0
-    mov r7, #1
-    swi 0
+    mov x0, #0
+    mov x8, #93
+    svc #0
 
 error:
-    mov r0, #-1
-    mov r7, #1
-    swi 0
+    mov x0, #-1
+    mov x8, #93
+    svc #0
+
+atoi:
+    mov x2, #0
+    mov x4, #0
+atoi_loop:
+    ldrb w3, [x0], #1
+    cmp w3, #','
+    beq atoi_end
+    cmp w3, #0
+    beq atoi_end
+    sub w3, w3, #'0'
+    cmp w3, #9
+    bhi atoi_end
+    mov x5, #10
+    mul x2, x2, x5
+    add x2, x2, x3
+    mov x4, #1
+    b atoi_loop
+atoi_end:
+    cmp x4, #0
+    b.eq atoi_invalid
+    mov x0, x2
+    ret
+atoi_invalid:
+    mov x0, #-1
+    ret
+
+write_string:
+    mov x2, #0
+strlen_loop:
+    ldrb w3, [x1, x2]
+    cbz w3, strlen_done
+    add x2, x2, #1
+    b strlen_loop
+strlen_done:
+    mov x8, #64
+    svc #0
+    ret
+
+itoa_fixed_point:
+    mov x2, #10
+    udiv x3, x0, x2
+    msub x4, x3, x2, x0
+
+    mov x5, #0
+itoa_loop:
+    mov x6, #10
+    udiv x7, x3, x6
+    msub x8, x7, x6, x3
+    add x8, x8, #'0'
+    strb w8, [x1, x5]
+    add x5, x5, #1
+    mov x3, x7
+    cbnz x3, itoa_loop
+
+    mov x6, #0
+    sub x7, x5, #1
+reverse_loop:
+    cmp x6, x7
+    bge reverse_done
+    ldrb w8, [x1, x6]
+    ldrb w9, [x1, x7]
+    strb w9, [x1, x6]
+    strb w8, [x1, x7]
+    add x6, x6, #1
+    sub x7, x7, #1
+    b reverse_loop
+reverse_done:
+
+    mov w8, #'.'
+    strb w8, [x1, x5]
+    add x5, x5, #1
+
+    add x4, x4, #'0'
+    strb w4, [x1, x5]
+    add x5, x5, #1
+
+    mov x4, #0
+    strb w4, [x1, x5]
+
+    ret
+
+sqrt:
+    mov x1, x0
+    lsr x0, x0, #1
+    mov x2, #0
+sqrt_loop:
+    mov x3, x0
+    udiv x0, x1, x0
+    add x0, x0, x3
+    lsr x0, x0, #1
+    add x2, x2, #1
+    cmp x2, #20
+    b.lt sqrt_loop
+    ret
