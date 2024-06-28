@@ -40,7 +40,7 @@ def luminucidad():
                 calidad = "Nublado"
             print(f"Estado del sensor: {calidad}")
             socketio.emit('luminosidad', {'status': calidad})
-            time.sleep(7)
+            time.sleep(1)
     except KeyboardInterrupt:
         print("Programa terminado")
         
@@ -57,7 +57,7 @@ def leer_sensor_mq2():
             print(f"Calidad del aire: {calidada}")
             buena, mala = counter_air(aire_data)
             socketio.emit('calidad_aire', {'bueno': buena, 'malo': mala})
-            time.sleep(7)
+            time.sleep(5)
     except KeyboardInterrupt:
         print("Programa terminado")
 
@@ -87,7 +87,7 @@ def velocidad():
                     velocidadd = round(wind_speed)
                     wind_speeds.append(velocidadd)
                     print(f"Velocidad del viento: {wind_speed:.2f} km/h")
-                    time.sleep(10)  
+                    time.sleep(5)  
                 wind_count = 0  
                 start_time = time.time()
     except KeyboardInterrupt:
@@ -101,9 +101,9 @@ def barometro():
             print("Pressure (hPa): " + str(pressure))
             data = round(pressure / 10)
             presion_data.append(data)
-            time.sleep(7)
+            time.sleep(5)
         except RuntimeError as e:
-            print(f'Error al leer el sensor DHT11: {e}')
+            print(f'Error al leer el barometro: {e}')
 
 def fill_data():
     # Configura el sensor DHT11 en el pin GPIO 23
@@ -119,7 +119,7 @@ def fill_data():
                 humedad_data.append(humedad)
             else:
                 print('Fallo al leer los datos del sensor.')
-            time.sleep(7)
+            time.sleep(5)
         except RuntimeError as e:
             print(f'Error al leer el sensor DHT11: {e}')
 

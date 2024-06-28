@@ -38,39 +38,55 @@ function ClimateTech() {
     };
   }, []);
 
-  const fetchData = async (panelId) => {
-    fetch(`http://localhost:5000/data/${panelId}`, { method: 'GET' })
-      .then(response => response.json())
-      .then(data => {
-        switch (panelId) {
-          case 'temp':
-            setTempData(data);
-            break;
-          case 'hum':
-            setHumData(data);
-            break;
-          case 'viento':
-            setVientoData(data);
-            break;
-          case 'lum':
-            setLumData(data);
-            break;
-          case 'aire':
-            setAireData(data);
-            break;
-          case 'pres':
-            setPresData(data);
-            break;
-          default:
-            console.error('Unrecognized panel ID');
-        }
-      })
-      .catch(error => console.error('Failed to fetch data:', error));
-  };
+  useEffect(() => {
+    let interval = null;
+
+    const fetchData = async (panelId) => {
+      fetch(`http://localhost:5000/data/${panelId}`, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+          switch (panelId) {
+            case 'temp':
+              setTempData(data);
+              break;
+            case 'hum':
+              setHumData(data);
+              break;
+            case 'viento':
+              setVientoData(data);
+              break;
+            case 'lum':
+              setLumData(data);
+              break;
+            case 'aire':
+              setAireData(data);
+              break;
+            case 'pres':
+              setPresData(data);
+              break;
+            default:
+              console.error('Unrecognized panel ID');
+          }
+        })
+        .catch(error => console.error('Failed to fetch data:', error));
+    };
+
+    if (activePanel) {
+      fetchData(activePanel);  // Hacer una primera carga inmediata
+      interval = setInterval(() => {
+        fetchData(activePanel);
+      }, 6000);  // Intervalo cada 6 segundos
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [activePanel]);  // Re-ejecutar el efecto cuando activePanel cambie
 
   const showPanel = (panelId) => {
     setActivePanel(activePanel === panelId ? null : panelId);
-    fetchData(panelId);
   };
 
   return (
