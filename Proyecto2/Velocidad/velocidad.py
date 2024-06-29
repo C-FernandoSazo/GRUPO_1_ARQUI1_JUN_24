@@ -41,5 +41,5 @@ except KeyboardInterrupt:
 finally:
     GPIO.cleanup()
 
-
+# Diego Dubón trabajó en la implementación física de este sensor 
 
