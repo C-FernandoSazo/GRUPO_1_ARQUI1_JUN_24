@@ -12,6 +12,11 @@ function ClimateTech() {
   const [lumData, setLumData] = useState({ status: 'Soleado' });
   const [aireData, setAireData] = useState({ bueno: 0, malo: 0 });
   const [presData, setPresData] = useState({});
+  const [ultimoTemp, setUltimoTemp] = useState(null);
+  const [ultimoHum, setUltimoHum] = useState(null);
+  const [ultimoViento, setUltimoViento] = useState(null);
+  const [ultimoAire, setUltimoAire] = useState(null);
+  const [ultimoPres, setUltimoPres] = useState(null);
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -85,6 +90,32 @@ function ClimateTech() {
     };
   }, [activePanel]);  // Re-ejecutar el efecto cuando activePanel cambie
 
+  useEffect(() => {
+    socket.on('temperatura', (data) => {
+      setUltimoTemp(data.temperatura);
+    });
+    socket.on('humedad', (data) => {
+      setUltimoHum(data.humedad);
+    });
+    socket.on('viento', (data) => {
+      setUltimoViento(data.velocidad);
+    });
+    socket.on('aire', (data) => {
+      setUltimoAire(data.calidada);
+    });
+    socket.on('presion', (data) => {
+      setUltimoPres(data.presion);
+    });
+  
+    return () => {
+      socket.off('temperatura');
+      socket.off('humedad');
+      socket.off('viento');
+      socket.off('aire');
+      socket.off('presion');
+    };
+  }, []);
+
   const showPanel = (panelId) => {
     setActivePanel(activePanel === panelId ? null : panelId);
   };
@@ -96,6 +127,14 @@ function ClimateTech() {
         <span className="climate">climateTech.</span>
         <span className="symbol">/&gt;</span>
       </h1>
+      <div className="latest-data-panel">
+        <div className="latest-data-item">Temperatura: {ultimoTemp || 'Cargando...'}</div>
+        <div className="latest-data-item">Humedad: {ultimoHum || 'Cargando...'}</div>
+        <div className="latest-data-item">Velocidad del Viento: {ultimoViento || 'Cargando...'}</div>
+        <div className="latest-data-item">Calidad del Aire: {ultimoAire || 'Cargando...'}</div>
+        <div className="latest-data-item">Presión: {ultimoPres || 'Cargando...'}</div>
+      </div>
+
       <div className="button-panel">
         <button className="ui-btn" onClick={() => showPanel('temp')}><span>Temperatura</span></button>
         <button className="ui-btn" onClick={() => showPanel('hum')}><span>Humedad</span></button>

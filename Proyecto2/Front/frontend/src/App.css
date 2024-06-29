@@ -378,3 +378,26 @@ transform: translate(-50px, 50px);
 .info-panel, .cardContainer {
   margin-top: 20px;
 }
+
+.latest-data-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Ajusta automáticamente el número de columnas */
+  gap: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px; /* Ajustar según necesidad */
+  margin: 20px auto;
+}
+
+.latest-data-item {
+  padding: 10px;
+  background-color: #333;
+  border-radius: 5px;
+  color: white;
+  text-align: center;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif;
+}

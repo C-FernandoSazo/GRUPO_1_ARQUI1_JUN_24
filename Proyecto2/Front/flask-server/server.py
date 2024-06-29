@@ -57,6 +57,7 @@ def leer_sensor_mq2():
             print(f"Calidad del aire: {calidada}")
             buena, mala = counter_air(aire_data)
             socketio.emit('calidad_aire', {'bueno': buena, 'malo': mala})
+            socketio.emit('aire', {'calidada': calidada})
             time.sleep(5)
     except KeyboardInterrupt:
         print("Programa terminado")
@@ -87,6 +88,7 @@ def velocidad():
                     velocidadd = round(wind_speed)
                     wind_speeds.append(velocidadd)
                     print(f"Velocidad del viento: {wind_speed:.2f} km/h")
+                    socketio.emit('viento', {'velocidad': velocidadd})
                     time.sleep(5)  
                 wind_count = 0  
                 start_time = time.time()
@@ -101,6 +103,7 @@ def barometro():
             print("Pressure (hPa): " + str(pressure))
             data = round(pressure / 10)
             presion_data.append(data)
+            socketio.emit('presion', {'presion': data})
             time.sleep(5)
         except RuntimeError as e:
             print(f'Error al leer el barometro: {e}')
@@ -117,6 +120,8 @@ def fill_data():
                 print(f'Temperatura: {temperatura:.1f}°C, Humedad: {humedad:.1f}%')
                 global_data.append(temperatura)
                 humedad_data.append(humedad)
+                socketio.emit('temperatura', {'temperatura': temperatura})
+                socketio.emit('humedad', {'humedad': humedad})
             else:
                 print('Fallo al leer los datos del sensor.')
             time.sleep(5)
